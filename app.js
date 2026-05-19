@@ -1,5 +1,5 @@
 const TEACHER_EMAIL = "kevin.mccann@greececsd.org";
-const APPS_SCRIPT_WEB_APP_URL = "";
+const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhFV6QJmNiH-ny6So0C-xv7_49akwmBYcI3OMVvqk81MqCAOX-72Hf3GD2KxqGp7Bmdg/exec";
 
 const FUNCTIONS = [
   "Economic",
