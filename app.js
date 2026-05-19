@@ -208,6 +208,15 @@ let state = loadState();
 let activeActivity = "reference";
 let lastSubmission = null;
 let submissionCounter = 0;
+let autoScrollTimer = null;
+let autoScrollDir = 0;
+
+function startAutoScroll(dir) {
+  if (autoScrollDir === dir) return;
+  autoScrollDir = dir;
+  clearInterval(autoScrollTimer);
+  if (dir !== 0) autoScrollTimer = setInterval(() => window.scrollBy(0, dir * 10), 16);
+}
 
 function loadState() {
   const saved = localStorage.getItem("familyFunctionsPacket");
@@ -843,6 +852,11 @@ function handleDragStart(event) {
 }
 
 function handleDragOver(event) {
+  const threshold = 80;
+  if (event.clientY < threshold) startAutoScroll(-1);
+  else if (event.clientY > window.innerHeight - threshold) startAutoScroll(1);
+  else startAutoScroll(0);
+
   const zone = event.target.closest("[data-drop-situation]");
   if (!zone) return;
   event.preventDefault();
@@ -850,11 +864,13 @@ function handleDragOver(event) {
 }
 
 function handleDragLeave(event) {
+  startAutoScroll(0);
   const zone = event.target.closest("[data-drop-situation]");
   if (zone) zone.classList.remove("drag-over");
 }
 
 function handleDrop(event) {
+  startAutoScroll(0);
   const zone = event.target.closest("[data-drop-situation]");
   if (!zone) return;
   event.preventDefault();
@@ -1129,6 +1145,7 @@ document.addEventListener("input", handleInput);
 document.addEventListener("change", handleInput);
 document.addEventListener("click", handleClick);
 document.addEventListener("dragstart", handleDragStart);
+document.addEventListener("dragend", () => startAutoScroll(0));
 document.addEventListener("dragover", handleDragOver);
 document.addEventListener("dragleave", handleDragLeave);
 document.addEventListener("drop", handleDrop);
