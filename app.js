@@ -925,17 +925,17 @@ async function createGmailDraft(report, filename, submittedAt) {
   if (!APPS_SCRIPT_WEB_APP_URL) return false;
   const { total } = getScores();
   const name = studentFullName();
+  const body = new URLSearchParams({
+    to: TEACHER_EMAIL,
+    subject: `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`,
+    filename,
+    report,
+    summary: `Student: ${name || "Not entered"}\nClass period: ${state.student.period || "Not entered"}\nOverall score: ${total.points}/${total.possible} (${total.percent}%)`,
+  });
   await fetch(APPS_SCRIPT_WEB_APP_URL, {
     method: "POST",
     mode: "no-cors",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      to: TEACHER_EMAIL,
-      subject: `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`,
-      filename,
-      report,
-      summary: `Overall score: ${total.points}/${total.possible} (${total.percent}%)`,
-    }),
+    body,
   });
   return true;
 }

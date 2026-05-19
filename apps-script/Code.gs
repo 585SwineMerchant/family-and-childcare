@@ -1,5 +1,12 @@
 function doPost(e) {
-  var payload = JSON.parse(e.postData.contents || "{}");
+  var payload = e.parameter || {};
+  if ((!payload.report || !payload.filename) && e.postData && e.postData.contents) {
+    try {
+      payload = JSON.parse(e.postData.contents || "{}");
+    } catch (err) {
+      payload = {};
+    }
+  }
   var to = payload.to || "kevin.mccann@greececsd.org";
   var subject = payload.subject || "Family Functions Packet Results";
   var report = payload.report || "";
@@ -17,4 +24,10 @@ function doPost(e) {
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet() {
+  return ContentService
+    .createTextOutput("Family Functions Gmail helper is running.")
+    .setMimeType(ContentService.MimeType.TEXT);
 }
