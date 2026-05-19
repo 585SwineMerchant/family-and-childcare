@@ -925,19 +925,35 @@ async function createGmailDraft(report, filename, submittedAt) {
   if (!APPS_SCRIPT_WEB_APP_URL) return false;
   const { total } = getScores();
   const name = studentFullName();
-  const body = new URLSearchParams({
+  const payload = {
     to: TEACHER_EMAIL,
     subject: `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`,
     filename,
     report,
     summary: `Student: ${name || "Not entered"}\nClass period: ${state.student.period || "Not entered"}\nOverall score: ${total.points}/${total.possible} (${total.percent}%)`,
-  });
-  await fetch(APPS_SCRIPT_WEB_APP_URL, {
-    method: "POST",
-    mode: "no-cors",
-    body,
-  });
+  };
+  postToAppsScript(payload);
   return true;
+}
+
+function postToAppsScript(payload) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = APPS_SCRIPT_WEB_APP_URL;
+  form.target = "draftFrame";
+  form.style.display = "none";
+
+  for (const [key, value] of Object.entries(payload)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = key;
+    input.value = value;
+    form.append(input);
+  }
+
+  document.body.append(form);
+  form.submit();
+  window.setTimeout(() => form.remove(), 1000);
 }
 
 async function submitWork() {
