@@ -504,6 +504,9 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .question-pager {
