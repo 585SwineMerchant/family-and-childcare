@@ -197,6 +197,8 @@ const defaultState = {
 
 let state = loadState();
 let activeActivity = "reference";
+let lastSubmission = null;
+let submissionCounter = 0;
 
 function loadState() {
   const saved = localStorage.getItem("familyFunctionsPacket");
@@ -750,6 +752,24 @@ function handleClick(event) {
     removeStrategyFromCurrentSituation(removeStrategy.dataset.removeStrategy);
   }
 
+  const emailAction = event.target.closest("[data-email-action]");
+  if (emailAction && lastSubmission) {
+    const action = emailAction.dataset.emailAction;
+    if (action === "download") {
+      downloadReport(lastSubmission.report, lastSubmission.filename);
+      showToast("Results file downloaded again.");
+    }
+    if (action === "gmail") {
+      openGmail(lastSubmission.report, lastSubmission.filename, lastSubmission.submittedAt);
+      showToast("Gmail opened again.");
+    }
+    if (action === "draft") {
+      createGmailDraft(lastSubmission.report, lastSubmission.filename, lastSubmission.submittedAt)
+        .then(() => showToast("Gmail draft requested again."))
+        .catch(() => showToast("Gmail draft retry did not complete."));
+    }
+  }
+
   const moveButton = event.target.closest("[data-rank-move]");
   if (moveButton) {
     const index = Number(moveButton.dataset.rankMove);
@@ -850,9 +870,28 @@ function buildReport() {
   return lines.join("\n");
 }
 
-function downloadReport(report) {
+function submissionTimestamp() {
+  const now = new Date();
+  submissionCounter += 1;
+  const stamp = `${now.toISOString().replace(/[:.]/g, "-")}-${submissionCounter}`;
+  const label = now.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return { stamp, label };
+}
+
+function makeSubmissionPackage() {
+  const report = buildReport();
+  const { stamp, label } = submissionTimestamp();
   const safeName = (studentFullName() || "student").trim().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "student";
-  const filename = `family-functions-results-${safeName}.txt`;
+  const filename = `family-functions-results-${safeName}-${stamp}.txt`;
+  return { report, filename, submittedAt: label };
+}
+
+function downloadReport(report, filename) {
   const blob = new Blob([report], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -865,10 +904,10 @@ function downloadReport(report) {
   return filename;
 }
 
-function openGmail(report, filename) {
+function openGmail(report, filename, submittedAt) {
   const { total } = getScores();
   const name = studentFullName();
-  const subject = `Family Functions Packet - ${name || "Student"} - ${total.percent}%`;
+  const subject = `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`;
   const summary = [
     `Student: ${name || "Not entered"}`,
     `Class period: ${state.student.period || "Not entered"}`,
@@ -882,7 +921,7 @@ function openGmail(report, filename) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-async function createGmailDraft(report, filename) {
+async function createGmailDraft(report, filename, submittedAt) {
   if (!APPS_SCRIPT_WEB_APP_URL) return false;
   const { total } = getScores();
   const name = studentFullName();
@@ -892,7 +931,7 @@ async function createGmailDraft(report, filename) {
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({
       to: TEACHER_EMAIL,
-      subject: `Family Functions Packet - ${name || "Student"} - ${total.percent}%`,
+      subject: `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`,
       filename,
       report,
       summary: `Overall score: ${total.points}/${total.possible} (${total.percent}%)`,
@@ -902,15 +941,41 @@ async function createGmailDraft(report, filename) {
 }
 
 async function submitWork() {
-  const report = buildReport();
-  const filename = downloadReport(report);
-  const drafted = await createGmailDraft(report, filename).catch(() => false);
+  const submission = makeSubmissionPackage();
+  lastSubmission = submission;
+  renderSubmissionPanel("Preparing results...");
+
+  if (!APPS_SCRIPT_WEB_APP_URL) {
+    openGmail(submission.report, submission.filename, submission.submittedAt);
+  }
+
+  const filename = downloadReport(submission.report, submission.filename);
+  const drafted = await createGmailDraft(submission.report, filename, submission.submittedAt).catch(() => false);
   if (drafted) {
+    renderSubmissionPanel("Gmail draft requested. You can retry or download again below.");
     showToast("A Gmail draft was requested and the results file was generated.");
   } else {
-    openGmail(report, filename);
+    renderSubmissionPanel("Results prepared. Use the buttons below if Gmail did not open or the download was missed.");
     showToast("A Gmail message opened and the results file was generated.");
   }
+}
+
+function renderSubmissionPanel(message = "") {
+  const panel = document.getElementById("submissionPanel");
+  if (!panel) return;
+  if (!lastSubmission) {
+    panel.innerHTML = "";
+    return;
+  }
+  panel.innerHTML = `
+    <p>${escapeHtml(message || "Results are ready.")}</p>
+    <p class="muted">Last prepared: ${escapeHtml(lastSubmission.submittedAt)}</p>
+    <div class="submission-actions">
+      <button class="ghost-button" data-email-action="download">Download again</button>
+      ${APPS_SCRIPT_WEB_APP_URL
+        ? `<button class="ghost-button" data-email-action="draft">Create Gmail draft again</button>`
+        : `<button class="ghost-button" data-email-action="gmail">Open Gmail again</button>`}
+    </div>`;
 }
 
 function showToast(message) {

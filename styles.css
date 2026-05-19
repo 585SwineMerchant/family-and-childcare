@@ -222,6 +222,26 @@ button:focus-visible {
   font-size: 1rem;
 }
 
+.submission-panel {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+}
+
+.submission-panel:empty {
+  display: none;
+}
+
+.submission-panel p {
+  margin: 0;
+  font-size: 0.86rem;
+}
+
+.submission-actions {
+  display: grid;
+  gap: 8px;
+}
+
 .nav-button {
   display: grid;
   grid-template-columns: auto 1fr auto;
