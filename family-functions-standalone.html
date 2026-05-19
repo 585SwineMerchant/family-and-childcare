@@ -1,0 +1,1997 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Family Functions Interactive Packet</title>
+    <style>
+:root {
+  color-scheme: light;
+  --ink: #1e2430;
+  --muted: #586174;
+  --line: #d8ddea;
+  --paper: #fff8ec;
+  --panel: #ffffff;
+  --blue: #1f6aa5;
+  --blue-dark: #153f73;
+  --coral: #ef6b4a;
+  --gold: #f3b43f;
+  --green: #32a06f;
+  --violet: #7860d7;
+  --focus: #0f6cb6;
+  --shadow: 0 14px 34px rgba(31, 63, 103, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(239, 107, 74, 0.20), transparent 28rem),
+    radial-gradient(circle at 92% 7%, rgba(50, 160, 111, 0.18), transparent 24rem),
+    linear-gradient(180deg, #f9fcff 0%, var(--paper) 46%, #fffdf7 100%);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.45;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 24px clamp(16px, 4vw, 48px);
+  background:
+    linear-gradient(135deg, rgba(31, 106, 165, 0.96), rgba(21, 63, 115, 0.98)),
+    #174a88;
+  border-bottom: 1px solid var(--line);
+  color: #fff;
+}
+
+.brand-mark {
+  width: 78px;
+  height: 78px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: #11365f;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.20);
+}
+
+.brand-mark img {
+  display: block;
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #ffe08a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: clamp(1.55rem, 2.8vw, 2.55rem);
+  line-height: 1.05;
+}
+
+h2 {
+  font-size: 1.18rem;
+}
+
+h3 {
+  font-size: 1rem;
+}
+
+.score-pill {
+  min-width: 88px;
+  padding: 10px 14px;
+  border: 2px solid rgba(255, 255, 255, 0.72);
+  border-radius: 14px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.13);
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+label span,
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 42px;
+  border: 2px solid #c8d1df;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  padding: 9px 10px;
+}
+
+textarea {
+  min-height: 94px;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--focus) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.primary-button,
+.ghost-button,
+.icon-button {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.primary-button {
+  min-height: 42px;
+  padding: 0 16px;
+  background: linear-gradient(135deg, var(--blue), var(--violet));
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(31, 106, 165, 0.24);
+}
+
+.primary-button:hover {
+  background: linear-gradient(135deg, var(--blue-dark), #5b48b6);
+}
+
+.ghost-button {
+  min-height: 36px;
+  padding: 0 11px;
+  background: #fff;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.ghost-button:hover {
+  border-color: var(--blue);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr) 260px;
+  gap: 18px;
+  padding: 18px clamp(16px, 4vw, 48px) 42px;
+}
+
+.activity-nav,
+.summary-panel,
+.activity-root {
+  align-self: start;
+}
+
+.activity-nav,
+.summary-panel {
+  position: sticky;
+  top: 16px;
+}
+
+.activity-nav {
+  display: grid;
+  gap: 8px;
+}
+
+#activityNav {
+  display: grid;
+  gap: 8px;
+}
+
+.identity-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px solid #e2e9f3;
+}
+
+.identity-panel h2 {
+  color: var(--blue-dark);
+  font-size: 1rem;
+}
+
+.submission-panel {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+}
+
+.submission-panel:empty {
+  display: none;
+}
+
+.submission-panel p {
+  margin: 0;
+  font-size: 0.86rem;
+}
+
+.submission-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-button {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 9px;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.nav-button[aria-current="page"] {
+  border-color: var(--blue);
+  background: #eef7ff;
+  box-shadow: inset 5px 0 0 var(--coral), var(--shadow);
+}
+
+.nav-index {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffecbd;
+  color: #73470b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.nav-score {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.activity-root {
+  display: grid;
+  gap: 14px;
+}
+
+.section-intro,
+.summary-panel,
+.result-panel {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.summary-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.section-intro {
+  display: grid;
+  gap: 8px;
+}
+
+.section-intro p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.grid-list {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(31, 63, 103, 0.08);
+}
+
+.focus-card {
+  border-color: #b9d8f1;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 252, 244, 0.98)),
+    #fff;
+}
+
+.card-header {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #fff2de;
+  color: #74450c;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.auto-tag {
+  background: #e4f5ec;
+  color: #1a6b40;
+}
+
+.review-tag {
+  background: #ede8fb;
+  color: #4a359a;
+}
+
+.review-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7860d7;
+  white-space: nowrap;
+}
+
+.review-star {
+  color: var(--violet);
+  font-size: 0.82rem;
+  margin-left: 2px;
+}
+
+.score-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 4px 0;
+}
+
+.score-summary-row dt {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.score-summary-row dd strong {
+  color: var(--blue-dark);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.scenario-text {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 700;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.three-col {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.big-choice {
+  min-width: 170px;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.choice input {
+  width: auto;
+  min-height: auto;
+}
+
+.reference-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reference-card {
+  border-top: 4px solid var(--blue);
+}
+
+.reference-card:nth-child(2n) {
+  border-top-color: var(--coral);
+}
+
+.reference-card:nth-child(3n) {
+  border-top-color: var(--green);
+}
+
+.mode-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  border: 2px solid #d5e3f1;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.mode-switch button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.mode-switch button.active {
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  color: #fff;
+}
+
+.reference-card p,
+.card p,
+.result-panel p {
+  margin: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.question-pager {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #dbe5f2;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.question-pager span {
+  color: var(--blue-dark);
+  font-weight: 800;
+  text-align: center;
+}
+
+.question-pager button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.progress-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 2px solid #b8c5d5;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.dot.active {
+  border-color: var(--coral);
+  background: var(--coral);
+}
+
+.drop-zone {
+  display: grid;
+  gap: 9px;
+  min-height: 130px;
+  padding: 14px;
+  border: 3px dashed #a8c9e8;
+  border-radius: 16px;
+  background: #f4fbff;
+}
+
+.drop-zone.drag-over {
+  border-color: var(--green);
+  background: #ecfff5;
+}
+
+.selected-strategies {
+  display: grid;
+  gap: 8px;
+}
+
+.strategy-tile,
+.strategy-chip {
+  border: 2px solid #d5deeb;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.strategy-tile {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  align-items: center;
+  min-height: 58px;
+  padding: 10px;
+  box-shadow: 0 8px 16px rgba(31, 63, 103, 0.08);
+}
+
+.strategy-tile span,
+.strategy-chip strong {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffecbd;
+  color: #73470b;
+}
+
+.strategy-tile.used {
+  border-color: var(--green);
+  background: #effff6;
+}
+
+.strategy-chip {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  padding: 8px 10px;
+}
+
+.strategy-chip:hover {
+  border-color: var(--coral);
+}
+
+.mini-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.mini-list li + li {
+  margin-top: 4px;
+}
+
+.rank-list {
+  display: grid;
+  gap: 8px;
+}
+
+.rank-item {
+  display: grid;
+  grid-template-columns: 34px 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.rank-number {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eaf3f5;
+  color: var(--blue-dark);
+  font-weight: 800;
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: #f6f7f9;
+  border-color: var(--line);
+}
+
+.icon-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.meter {
+  overflow: hidden;
+  height: 12px;
+  margin: 12px 0;
+  border-radius: 999px;
+  background: #e7ebf0;
+}
+
+.meter span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--coral), var(--gold), var(--green));
+  transition: width 200ms ease;
+}
+
+dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.score-row strong {
+  color: var(--ink);
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  max-width: min(420px, calc(100vw - 36px));
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .summary-panel {
+    position: static;
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .reference-grid,
+  .three-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .app-header,
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .score-pill {
+    justify-self: start;
+  }
+
+  .activity-nav {
+    position: static;
+  }
+
+  #activityNav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reference-grid,
+  .two-col,
+  .three-col,
+  .strategy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-button {
+    grid-template-columns: auto 1fr;
+  }
+
+  .nav-score {
+    grid-column: 2;
+  }
+}
+
+    </style>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-mark">
+        <img src="https://cmsv2-assets.apptegy.net/uploads/31303/file/5453843/c76a25f3-61e0-4b22-8560-f7f2c77127a3.png" alt="Greece Central Schools logo">
+      </div>
+      <div>
+        <p class="eyebrow">Grade 6 Family and Childcare</p>
+        <h1>Family Functions & Healthy Families</h1>
+      </div>
+      <div class="score-pill" id="overallScore">0%</div>
+    </header>
+
+    <div class="layout">
+      <nav class="activity-nav" aria-label="Activities">
+        <div id="activityNav"></div>
+      </nav>
+      <main id="activityRoot" class="activity-root" tabindex="-1"></main>
+      <aside class="summary-panel" aria-label="Information hub">
+        <h2>Score</h2>
+        <div class="meter">
+          <span id="meterFill"></span>
+        </div>
+        <dl id="scoreBreakdown"></dl>
+        <section class="identity-panel" aria-label="Student information">
+          <h2>Student</h2>
+          <label>
+            <span>First name</span>
+            <input id="firstName" autocomplete="given-name" placeholder="First name">
+          </label>
+          <label>
+            <span>Last name</span>
+            <input id="lastName" autocomplete="family-name" placeholder="Last name">
+          </label>
+          <label>
+            <span>Class period</span>
+            <select id="classPeriod">
+              <option value="">Choose period</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4/5">4/5</option>
+              <option value="6/7">6/7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+            </select>
+          </label>
+          <label>
+            <span>Teacher</span>
+            <select id="teacherSelect">
+              <option value="">Choose teacher</option>
+              <option value="mccann">McCann</option>
+              <option value="epping">Epping</option>
+              <option value="billitier">Billitier</option>
+              <option value="swanson">Swanson</option>
+            </select>
+          </label>
+          <button id="submitWork" class="primary-button">Prepare Gmail Results</button>
+          <div id="submissionPanel" class="submission-panel" aria-live="polite"></div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <iframe id="draftFrame" name="draftFrame" title="Gmail draft helper" hidden></iframe>
+
+    <script>
+const TEACHERS = [
+  { id: "mccann",    name: "McCann",    email: "kevin.mccann@greececsd.org" },
+  { id: "epping",    name: "Epping",    email: "christine.epping-plaisted@greececsd.org" },
+  { id: "billitier", name: "Billitier", email: "hannah.billitier@greececsd.org" },
+  { id: "swanson",   name: "Swanson",   email: "janene.swanson@greececsd.org" },
+];
+
+function getTeacher() {
+  return TEACHERS.find((t) => t.id === state.student.teacher) || TEACHERS[0];
+}
+const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhFV6QJmNiH-ny6So0C-xv7_49akwmBYcI3OMVvqk81MqCAOX-72Hf3GD2KxqGp7Bmdg/exec";
+
+const FUNCTIONS = [
+  "Economic",
+  "Protection",
+  "Education",
+  "Recreation",
+  "Affection and Belonging",
+  "Adaptation",
+];
+
+const functionNotes = {
+  Economic: {
+    definition: "Meeting material needs such as food, housing, clothing, supplies, and money planning.",
+    example: "A family builds a budget and makes sure school supplies, winter coats, and meals are covered.",
+    consequence: "Family members may go without food, stable housing, health care, or chances to join activities.",
+    community: "Schools, food banks, and support programs may need to help when families cannot meet economic needs.",
+  },
+  Protection: {
+    definition: "Keeping family members physically and emotionally safe, including health and emergency care.",
+    example: "A parent schedules checkups, keeps a first aid kit stocked, and teaches what to do in a fire.",
+    consequence: "Children may face harm with no adult help, and it becomes harder to learn, connect, or adapt.",
+    community: "Teachers, counselors, hospitals, and child protection services may need to step in.",
+  },
+  Education: {
+    definition: "Teaching values, culture, school habits, life skills, and practical knowledge.",
+    example: "A grandparent helps a child read each night or teaches cultural recipes and family stories.",
+    consequence: "Children may fall behind in school, miss guidance, or feel disconnected from their identity.",
+    community: "When many families cannot support learning, the whole community's future workforce is affected.",
+  },
+  Recreation: {
+    definition: "Building connection through play, relaxation, traditions, and shared fun.",
+    example: "A family keeps a weekly game night, park visit, movie night, or cooking tradition.",
+    consequence: "Relationships can become only about chores and needs, and children may seek connection elsewhere.",
+    community: "Parks, clubs, youth programs, and community centers often fill the need for safe connection and fun.",
+  },
+  "Affection and Belonging": {
+    definition: "Helping members feel loved, valued, comforted, and emotionally secure.",
+    example: "A parent comforts a child after a failure and reminds them they are loved and valued.",
+    consequence: "Children may struggle to trust others, manage emotions, or build healthy relationships.",
+    community: "Counselors, therapists, and social workers often help people heal from a lack of belonging.",
+  },
+  Adaptation: {
+    definition: "Adjusting roles, routines, and expectations when life changes or stress appears.",
+    example: "After a job loss or move, family members make a new plan and share responsibilities.",
+    consequence: "Responsibilities may become unfair, routines may fall apart, and members can feel alone in crisis.",
+    community: "During disasters, downturns, or health crises, families that adapt well help communities recover faster.",
+  },
+};
+
+const healthyTraits = [
+  "Trust",
+  "Respect",
+  "Empathy",
+  "Clear communication",
+  "Healthy boundaries",
+  "Fair expectations",
+  "Repair after conflict",
+  "Shared problem-solving",
+];
+
+const sortingCards = [
+  { id: 1, text: "Dad picks up extra shifts so the family can afford school supplies and winter coats.", primary: "Economic" },
+  { id: 2, text: "Mom schedules yearly checkups for all the kids and keeps a first aid kit fully stocked.", primary: "Protection" },
+  { id: 3, text: "Grandpa sits with Maya every night to help her practice reading. She is starting to love books.", primary: "Education", overlap: ["Affection and Belonging"] },
+  { id: 4, text: "On Sundays, the whole family goes to the park to play frisbee. Even Grandma comes.", primary: "Recreation", overlap: ["Affection and Belonging"] },
+  { id: 5, text: "When Lily cried after failing her test, her mom held her and said, 'I'm proud of you for trying.'", primary: "Affection and Belonging" },
+  { id: 6, text: "When dad lost his job, the family made a new budget together and cut back on extras until things improved.", primary: "Adaptation", overlap: ["Economic"] },
+  { id: 7, text: "The family has a rule: no one goes to bed angry. They talk things out first.", primary: "Affection and Belonging", overlap: ["Adaptation"] },
+  { id: 8, text: "Mom takes the whole family to get flu shots every fall.", primary: "Protection" },
+  { id: 9, text: "Dad teaches his son how to fix simple things around the house and change a bike tire.", primary: "Education" },
+  { id: 10, text: "Every Saturday, the family cooks together and tries a recipe from a different country.", primary: "Recreation", overlap: ["Education"] },
+  { id: 11, text: "When grandma got sick, family members took turns staying with her so she was never alone.", primary: "Affection and Belonging", overlap: ["Protection"] },
+  { id: 12, text: "Parents set up a savings account for their daughter's future before she started school.", primary: "Economic" },
+  { id: 13, text: "When the family moved, the older kids helped the younger ones adjust and make friends.", primary: "Adaptation" },
+  { id: 14, text: "Mom reads to the kids before bed, even now that they can read on their own.", primary: "Education", overlap: ["Affection and Belonging"] },
+  { id: 15, text: "Dad checks the smoke detectors every month and taught the kids what to do in a fire.", primary: "Protection", overlap: ["Education"] },
+  { id: 16, text: "The family has a weekly game night. No phones allowed.", primary: "Recreation", overlap: ["Affection and Belonging"] },
+  { id: 17, text: "Grandma teaches the kids traditional recipes and stories so they stay connected to their culture.", primary: "Education", overlap: ["Affection and Belonging"] },
+  { id: 18, text: "When mom went back to school, everyone took on extra chores so the family could adjust.", primary: "Adaptation", overlap: ["Economic"] },
+];
+
+const healthyScenarios = [
+  { id: 1, answer: "HEALTHY", text: "When Jordan gets in trouble at school, his parents ground him and then sit down to talk about what happened and why." },
+  { id: 2, answer: "UNHEALTHY", text: "In the Garza family, the kids know not to bother dad when he is in a bad mood. They have learned to stay out of his way." },
+  { id: 3, answer: "HEALTHY", text: "The Kim family has dinner together three nights a week. Each person shares one good thing and one hard thing from their day." },
+  { id: 4, answer: "UNHEALTHY", text: "When Mia told her mom she was being bullied, her mom said, 'Just ignore it. You are too sensitive.'" },
+  { id: 5, answer: "HEALTHY", text: "When the Torres family had money problems, the parents explained things to the kids and came up with savings ideas together." },
+  { id: 6, answer: "UNHEALTHY", text: "In Marcus's house, his older brother gets to do whatever he wants, but Marcus has strict rules. No one ever talks about it." },
+  { id: 7, answer: "HEALTHY", text: "After a big argument, the Rivera parents apologize to each other and to their kids. They explain that adults disagree sometimes but work it out." },
+  { id: 8, answer: "UNHEALTHY", text: "Sofia's parents talk badly about each other in front of her. She feels stuck in the middle and does not know who to side with." },
+  { id: 9, answer: "HEALTHY", text: "The Johnson family has a yearly camping trip. Even when times are hard, they find a way to make it happen." },
+  { id: 10, answer: "HEALTHY", text: "When Elijah told his parents he felt sad a lot, they made an appointment with a counselor and went with him." },
+  { id: 11, answer: "UNHEALTHY", text: "In the Parker household, nobody ever talks about problems. When something bad happens, everyone pretends it did not." },
+  { id: 12, answer: "HEALTHY", text: "The Davis family has a chore chart. When someone does not do their part, they talk about it as a group and adjust." },
+];
+
+const missingCards = [
+  { id: 1, family: "Reyes Family", answer: "Economic", affected: "Ana", text: "The Reyes family has enough love and laughter, but money is always tight. The kids sometimes go to school without lunch. Mom works two jobs but still struggles. The oldest child, 13-year-old Ana, stopped joining school activities because she is embarrassed about not having the right supplies or clothes." },
+  { id: 2, family: "Chen Family", answer: "Protection", affected: "Max", text: "The Chen family loves spending time together, but both parents work long hours and the kids are home alone after school. 11-year-old Max has been getting stomachaches on school days. He has not told anyone that an older kid on the bus scares him daily. He does not think his parents would have time to deal with it." },
+  { id: 3, family: "Walker Family", answer: "Education", affected: "Devon", text: "The Walker family keeps the TV on all evening. No one asks the kids about school or checks homework. 12-year-old Devon is falling behind in reading but has not said anything. His teacher has sent two notes home that were never read." },
+  { id: 4, family: "Ortiz Family", answer: "Recreation", affected: "Sofia", text: "Both parents in the Ortiz family work long hours including weekends. The family rarely spends time together just for fun. The kids are usually on screens or alone in their rooms. 11-year-old Sofia has started saying she does not like her family much, though she cannot explain why." },
+  { id: 5, family: "Morrison Family", answer: "Affection and Belonging", affected: "James", text: "The Morrison family is financially stable and the kids have everything they need. But affection is rare. Nobody says 'I love you.' Achievements go unnoticed. When 11-year-old James won a school award, his parents nodded and said, 'Good.' He stopped sharing things with them after that." },
+  { id: 6, family: "Patel Family", answer: "Adaptation", affected: "younger children, older kids", text: "The Patel family recently lost their grandmother, who had cared for the younger kids after school. Now no one knows what to do. The parents are too sad to make new plans, the older kids are trying to hold everything together, and the youngest are confused and scared. Nobody is talking about what comes next." },
+];
+
+const strategies = [
+  "Hold a family meeting where everyone gets a turn to speak without interruption.",
+  "Create a weekly schedule together so everyone knows what to expect.",
+  "Make a family budget and give kids a small role in tracking expenses.",
+  "Agree on a calm-down rule: take 10 minutes before continuing an argument.",
+  "Establish a no phones at dinner rule to create daily connection time.",
+  "Ask a school counselor, trusted teacher, or community organization for help.",
+  "Set up a weekly check-in where each person shares one feeling from the week.",
+  "Assign age-appropriate chores so everyone contributes to the household.",
+  "Start one simple family tradition: weekly breakfast, movie night, or a walk.",
+  "Reach out to extended family or neighbors when support is needed.",
+  "Seek family counseling from a professional.",
+  "Talk openly about a problem instead of pretending it is not there.",
+];
+
+const fixSituations = [
+  { id: 1, text: "Family members yell during arguments and say things they regret.", primary: [4], supporting: [1, 11] },
+  { id: 2, text: "Kids feel like they can't talk to their parents about problems.", primary: [7], supporting: [5, 1] },
+  { id: 3, text: "Money is tight and no one knows how to manage the stress.", primary: [3], supporting: [6, 10] },
+  { id: 4, text: "The family never spends time together and everyone feels disconnected.", primary: [9], supporting: [5, 2] },
+  { id: 5, text: "One child does all the household work while others do nothing.", primary: [8], supporting: [1] },
+  { id: 6, text: "After a big change, nobody knows what their new role or routine is.", primary: [2], supporting: [1, 12] },
+  { id: 7, text: "A family member is struggling with sadness and no one acknowledges it.", primary: [12], supporting: [11, 6] },
+  { id: 8, text: "Parents argue about money in front of the kids without explanation.", primary: [4], supporting: [3, 12] },
+];
+
+const consequences = [
+  { functionName: "Economic", text: "Members may go without food, stable housing, health care, supplies, and opportunities." },
+  { functionName: "Protection", text: "Children may face harm without help, and other functions suffer because safety is missing." },
+  { functionName: "Education", text: "Children may struggle in school, miss guidance, and lose connection to values or identity." },
+  { functionName: "Recreation", text: "Relationships become only about duties, and members miss chances to rest, play, and connect." },
+  { functionName: "Affection and Belonging", text: "Members can struggle to feel secure, trust others, manage emotions, and form healthy relationships." },
+  { functionName: "Adaptation", text: "Families can become stuck during change, roles become unfair, and stress strains relationships." },
+];
+
+const caseStudy = {
+  text: "The Brennan family lives in a three-bedroom house. There are four kids: Tyler (16), Jasmine (13), Marco (10), and baby Lily (2). Their mom, Diane, works full-time as a home health aide. Their dad, Robert, was laid off six months ago and has been home since.",
+  goingWell: [
+    "Diane and Robert have dinner with the kids every night and ask about their days.",
+    "Tyler teaches Marco how to play guitar on weekends. Marco looks forward to it all week.",
+    "Their church community has brought over meals and checked in regularly during the hard time.",
+    "Robert now spends more time with baby Lily than he ever had with the older kids.",
+  ],
+  struggling: [
+    "Money is tight. Jasmine stopped asking for school supplies so she does not stress her parents out.",
+    "Robert sometimes snaps at the kids over small things. Afterward he feels terrible, but does not always apologize.",
+    "Marco has been getting stomachaches before school. He is scared he is falling behind in reading but has told no one.",
+    "Diane cannot remember the last time she did something just for fun.",
+  ],
+  questions: [
+    { id: 1, prompt: "Which family functions are being met well? Give evidence from the story.", keywords: ["affection", "belonging", "dinner", "guitar", "church", "support", "recreation", "protection"] },
+    { id: 2, prompt: "Which functions are struggling? Who is most affected and how?", keywords: ["economic", "jasmine", "protection", "education", "marco", "adaptation", "robert"] },
+    { id: 3, prompt: "Identify two things that are unhealthy in this family. Explain why.", keywords: ["snaps", "apologize", "jasmine", "hiding", "marco", "silence", "diane", "unhealthy"] },
+    { id: 4, prompt: "Choose two Fix It strategies that could help this family. Explain why those two specifically.", keywords: ["check-in", "budget", "openly", "counseling", "strategy", "because"] },
+    { id: 5, prompt: "Overall: would you call this a healthy family? Why or why not?", keywords: ["strength", "concern", "healthy", "not", "evidence", "love", "gap"] },
+  ],
+};
+
+const rankingPrompts = [
+  "Which function did you rank #1? Why did you choose that one?",
+  "Which function did you disagree about the most? What were the different arguments?",
+  "Is there a function that cannot exist without another one? Which ones depend on each other?",
+  "Could a family survive long-term if one function completely disappeared? Which would be hardest to lose?",
+  "Did your ranking change as you thought through the functions? What changed your mind, if anything?",
+];
+
+const activities = [
+  { id: "reference", title: "Reference", render: renderReference, score: scoreReference },
+  { id: "sorting", title: "Function Sorting", render: renderSorting, score: scoreSorting },
+  { id: "healthy", title: "Healthy or Unhealthy", render: renderHealthy, score: scoreHealthy },
+  { id: "missing", title: "What's Missing", render: renderMissing, score: scoreMissing },
+  { id: "fix", title: "Fix It", render: renderFixIt, score: scoreFixIt },
+  { id: "consequence", title: "Consequences", render: renderConsequences, score: scoreConsequences },
+  { id: "ranking", title: "Ranking", render: renderRanking, score: scoreRanking },
+  { id: "case", title: "Case Study", render: renderCaseStudy, score: scoreCaseStudy },
+];
+
+const defaultState = {
+  student: { firstName: "", lastName: "", period: "", teacher: "" },
+  progress: {},
+  referenceMode: "definition",
+  sorting: {},
+  healthy: {},
+  missing: {},
+  fix: {},
+  consequence: {},
+  ranking: { order: [...FUNCTIONS], responses: {} },
+  caseStudy: {},
+};
+
+let state = loadState();
+let activeActivity = "reference";
+let lastSubmission = null;
+let submissionCounter = 0;
+
+function loadState() {
+  const saved = localStorage.getItem("familyFunctionsPacket");
+  if (!saved) return structuredClone(defaultState);
+  try {
+    const merged = mergeState(structuredClone(defaultState), JSON.parse(saved));
+    if (merged.student.name && !merged.student.firstName && !merged.student.lastName) {
+      const parts = merged.student.name.trim().split(/\s+/);
+      merged.student.firstName = parts.shift() || "";
+      merged.student.lastName = parts.join(" ");
+    }
+    return merged;
+  } catch {
+    return structuredClone(defaultState);
+  }
+}
+
+function mergeState(base, saved) {
+  for (const key of Object.keys(saved || {})) {
+    if (saved[key] && typeof saved[key] === "object" && !Array.isArray(saved[key])) {
+      base[key] = mergeState(base[key] || {}, saved[key]);
+    } else {
+      base[key] = saved[key];
+    }
+  }
+  return base;
+}
+
+function saveState() {
+  localStorage.setItem("familyFunctionsPacket", JSON.stringify(state));
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function studentFullName() {
+  return `${state.student.firstName || ""} ${state.student.lastName || ""}`.trim();
+}
+
+function wordCount(value) {
+  return String(value || "").trim().split(/\s+/).filter(Boolean).length;
+}
+
+function completionPoint(value, minimum = 8) {
+  return wordCount(value) >= minimum ? 1 : 0;
+}
+
+function keywordPoint(value, keywords) {
+  const normalized = String(value || "").toLowerCase();
+  return keywords.some((keyword) => normalized.includes(keyword.toLowerCase())) ? 1 : 0;
+}
+
+function scoreObject(points, possible) {
+  return { points, possible, percent: possible ? Math.round((points / possible) * 100) : 100 };
+}
+
+function splitScore(autoPoints, autoPossible, shortPoints, shortPossible) {
+  const points = autoPoints + shortPoints;
+  const possible = autoPossible + shortPossible;
+  return {
+    auto: { points: autoPoints, possible: autoPossible },
+    short: { points: shortPoints, possible: shortPossible },
+    points,
+    possible,
+    percent: possible ? Math.round((points / possible) * 100) : 100,
+  };
+}
+
+function getScores() {
+  const scores = {};
+  for (const activity of activities) scores[activity.id] = activity.score();
+  const graded = activities.filter((activity) => activity.id !== "reference");
+  const autoPoints = graded.reduce((sum, a) => sum + scores[a.id].auto.points, 0);
+  const autoPossible = graded.reduce((sum, a) => sum + scores[a.id].auto.possible, 0);
+  const shortPoints = graded.reduce((sum, a) => sum + scores[a.id].short.points, 0);
+  const shortPossible = graded.reduce((sum, a) => sum + scores[a.id].short.possible, 0);
+  const total = scoreObject(autoPoints + shortPoints, autoPossible + shortPossible);
+  return { scores, total, autoTotal: { points: autoPoints, possible: autoPossible }, shortTotal: { points: shortPoints, possible: shortPossible } };
+}
+
+function getActivityTotal(id) {
+  const totals = {
+    sorting: sortingCards.length,
+    healthy: healthyScenarios.length,
+    missing: missingCards.length,
+    fix: fixSituations.length,
+    consequence: consequences.length,
+    ranking: rankingPrompts.length + 1,
+    case: caseStudy.questions.length,
+  };
+  return totals[id] || 1;
+}
+
+function getActivityIndex(id) {
+  const total = getActivityTotal(id);
+  const current = Number(state.progress[id] || 0);
+  return Math.min(Math.max(current, 0), total - 1);
+}
+
+function setActivityIndex(id, index) {
+  state.progress[id] = Math.min(Math.max(index, 0), getActivityTotal(id) - 1);
+  saveState();
+  renderApp();
+}
+
+function progressDots(id, total, current) {
+  if (total <= 1) return "";
+  return `
+    <div class="progress-dots" aria-label="Question progress">
+      ${Array.from({ length: total }, (_, index) => `
+        <button class="dot${index === current ? " active" : ""}" data-step-jump="${index}" aria-label="Go to item ${index + 1}"></button>`).join("")}
+    </div>`;
+}
+
+function questionPager(id, total, current) {
+  if (total <= 1) return "";
+  return `
+    <div class="question-pager">
+      <button class="ghost-button" data-step="-1"${current === 0 ? " disabled" : ""}>Back</button>
+      <span>Item ${current + 1} of ${total}</span>
+      <button class="primary-button" data-step="1"${current === total - 1 ? " disabled" : ""}>Next</button>
+    </div>
+    ${progressDots(id, total, current)}`;
+}
+
+function singleQuestion(id, title, intro, body) {
+  const total = getActivityTotal(id);
+  const current = getActivityIndex(id);
+  return `
+    ${sectionIntro(title, intro)}
+    ${body}
+    ${questionPager(id, total, current)}`;
+}
+
+function setActive(id) {
+  activeActivity = id;
+  renderApp();
+  document.getElementById("activityRoot").focus();
+}
+
+function renderApp() {
+  renderStudentFields();
+  renderNav();
+  const activity = activities.find((item) => item.id === activeActivity);
+  document.getElementById("activityRoot").innerHTML = activity.render();
+  renderScores();
+}
+
+function renderStudentFields() {
+  document.getElementById("firstName").value = state.student.firstName;
+  document.getElementById("lastName").value = state.student.lastName;
+  document.getElementById("classPeriod").value = state.student.period;
+  document.getElementById("teacherSelect").value = state.student.teacher;
+}
+
+function renderNav() {
+  const { scores } = getScores();
+  document.getElementById("activityNav").innerHTML = activities.map((activity, index) => {
+    const current = activity.id === activeActivity ? ' aria-current="page"' : "";
+    const score = scores[activity.id];
+    const hasReview = activity.id !== "reference" && score.short.possible > 0;
+    const scoreText = activity.id === "reference" ? "study" : `${score.points}/${score.possible}${hasReview ? "★" : ""}`;
+    return `
+      <button class="nav-button" data-nav="${activity.id}"${current}>
+        <span class="nav-index">${index + 1}</span>
+        <span>${activity.title}</span>
+        <span class="nav-score">${scoreText}</span>
+      </button>`;
+  }).join("");
+}
+
+function renderScores() {
+  const { scores, total, autoTotal, shortTotal } = getScores();
+  document.getElementById("overallScore").textContent = `${total.points}/100`;
+  document.getElementById("meterFill").style.width = `${total.percent}%`;
+  document.getElementById("scoreBreakdown").innerHTML = `
+    <div class="score-row score-summary-row">
+      <dt>Auto-graded</dt>
+      <dd><strong>${autoTotal.points}</strong>/${autoTotal.possible}</dd>
+    </div>
+    <div class="score-row score-summary-row">
+      <dt>Short answers <span class="review-label">★ provisional</span></dt>
+      <dd><strong>${shortTotal.points}</strong>/${shortTotal.possible}</dd>
+    </div>
+    <div class="score-divider"></div>
+    ${activities
+      .filter((activity) => activity.id !== "reference")
+      .map((activity) => {
+        const score = scores[activity.id];
+        return `<div class="score-row">
+          <dt>${activity.title}</dt>
+          <dd><strong>${score.points}</strong>/${score.possible}${score.short.possible > 0 ? '<span class="review-star" title="Includes short answers pending teacher review">★</span>' : ""}</dd>
+        </div>`;
+      }).join("")}`;
+}
+
+function sectionIntro(title, text) {
+  return `<section class="section-intro"><h2>${escapeHtml(title)}</h2><p>${escapeHtml(text)}</p></section>`;
+}
+
+function functionSelect(name, selected = "", label = "Family function") {
+  return `
+    <label>
+      <span>${escapeHtml(label)}</span>
+      <select name="${escapeHtml(name)}">
+        <option value="">Choose</option>
+        ${FUNCTIONS.map((item) => `<option value="${escapeHtml(item)}"${item === selected ? " selected" : ""}>${escapeHtml(item)}</option>`).join("")}
+      </select>
+    </label>`;
+}
+
+function renderReference() {
+  const mode = state.referenceMode === "impact" ? "impact" : "definition";
+  return `
+    ${sectionIntro("Healthy Family Reference Card", "Use the switch to study either what each function looks like when it is met or what can happen when it breaks down.")}
+    <section class="mode-switch" aria-label="Reference card mode">
+      <button class="${mode === "definition" ? "active" : ""}" data-reference-mode="definition">Definition + Example</button>
+      <button class="${mode === "impact" ? "active" : ""}" data-reference-mode="impact">Family + Community Impact</button>
+    </section>
+    <section class="reference-grid">
+      ${FUNCTIONS.map((name) => {
+        const note = functionNotes[name];
+        return `
+        <article class="card reference-card">
+          <h3>${escapeHtml(name)}</h3>
+          ${mode === "definition" ? `
+            <p>${escapeHtml(note.definition)}</p>
+            <p><strong>Example:</strong> ${escapeHtml(note.example)}</p>
+          ` : `
+            <p><strong>Family impact:</strong> ${escapeHtml(note.consequence)}</p>
+            <p><strong>Community impact:</strong> ${escapeHtml(note.community)}</p>
+          `}
+        </article>`;
+      }).join("")}
+    </section>
+    <section class="card">
+      <h3>Healthy Family Characteristics</h3>
+      <div class="choice-row">
+        ${healthyTraits.map((trait) => `<span class="tag">${escapeHtml(trait)}</span>`).join("")}
+      </div>
+    </section>`;
+}
+
+function scoreReference() {
+  return splitScore(0, 0, 0, 0);
+}
+
+function renderSorting() {
+  const card = sortingCards[getActivityIndex("sorting")];
+  return singleQuestion("sorting", "Function Sorting Cards", "Choose the strongest family function for each scenario.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Scenario Card ${card.id}</h3>
+        <span class="tag auto-tag">1 pt auto</span>
+      </div>
+      <p class="scenario-text">${escapeHtml(card.text)}</p>
+      ${functionSelect(`sorting-${card.id}`, state.sorting[card.id] || "")}
+    </article>`);
+}
+
+function scoreSorting() {
+  const points = sortingCards.reduce((sum, card) => sum + (state.sorting[card.id] === card.primary ? 1 : 0), 0);
+  return splitScore(points, sortingCards.length, 0, 0);
+}
+
+function renderHealthy() {
+  const item = healthyScenarios[getActivityIndex("healthy")];
+  const entry = state.healthy[item.id] || {};
+  return singleQuestion("healthy", "Healthy or Unhealthy?", "Choose the best label and explain the reason in one complete sentence.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Scenario ${item.id}</h3>
+        <span class="tag auto-tag">1 auto</span><span class="tag review-tag">1 ★ review</span>
+      </div>
+      <p>${escapeHtml(item.text)}</p>
+      <div class="choice-row" role="radiogroup" aria-label="Scenario ${item.id}">
+        ${["HEALTHY", "UNHEALTHY"].map((choice) => `
+          <label class="choice big-choice">
+            <input type="radio" name="healthy-label-${item.id}" value="${choice}"${entry.label === choice ? " checked" : ""}>
+            <span>${choice}</span>
+          </label>`).join("")}
+      </div>
+      <label>
+        <span>Why?</span>
+        <textarea name="healthy-reason-${item.id}">${escapeHtml(entry.reason || "")}</textarea>
+      </label>
+    </article>`);
+}
+
+function scoreHealthy() {
+  let autoPoints = 0, shortPoints = 0;
+  for (const item of healthyScenarios) {
+    const entry = state.healthy[item.id] || {};
+    if (entry.label === item.answer) autoPoints += 1;
+    shortPoints += completionPoint(entry.reason, 7);
+  }
+  return splitScore(autoPoints, healthyScenarios.length, shortPoints, healthyScenarios.length);
+}
+
+function renderMissing() {
+  const card = missingCards[getActivityIndex("missing")];
+  const entry = state.missing[card.id] || {};
+  return singleQuestion("missing", "What's Missing?", "Identify the missing function, then explain the effect and who is most affected.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Card ${card.id}: ${escapeHtml(card.family)}</h3>
+        <span class="tag auto-tag">1 auto</span><span class="tag review-tag">2 ★ review</span>
+      </div>
+      <p>${escapeHtml(card.text)}</p>
+      ${functionSelect(`missing-function-${card.id}`, entry.functionName || "", "Which function is not being met?")}
+      <div class="two-col">
+        <label>
+          <span>What effect does this have?</span>
+          <textarea name="missing-effect-${card.id}">${escapeHtml(entry.effect || "")}</textarea>
+        </label>
+        <label>
+          <span>Who is most affected, and how does life outside home change?</span>
+          <textarea name="missing-affected-${card.id}">${escapeHtml(entry.affected || "")}</textarea>
+        </label>
+      </div>
+    </article>`);
+}
+
+function scoreMissing() {
+  let autoPoints = 0, shortPoints = 0;
+  for (const card of missingCards) {
+    const entry = state.missing[card.id] || {};
+    if (entry.functionName === card.answer) autoPoints += 1;
+    shortPoints += completionPoint(entry.effect, 8) + completionPoint(entry.affected, 8);
+  }
+  return splitScore(autoPoints, missingCards.length, shortPoints, missingCards.length * 2);
+}
+
+function renderFixIt() {
+  const item = fixSituations[getActivityIndex("fix")];
+  const entry = state.fix[item.id] || { strategies: [] };
+  const selected = entry.strategies || [];
+  const selectedMarkup = selected.length
+    ? selected.map((number) => `
+      <button class="strategy-chip" data-remove-strategy="${number}" aria-label="Remove strategy ${number}">
+        <strong>${number}</strong> ${escapeHtml(strategies[number - 1])}
+      </button>`).join("")
+    : `<p class="muted">Drag a strategy tile here, or tap a tile to add it.</p>`;
+
+  return singleQuestion("fix", "Fix It Strategy Matching", "Drag strategy tiles into the situation they best match, then explain why.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Situation ${item.id}</h3>
+        <span class="tag auto-tag">1 auto</span><span class="tag review-tag">1 ★ review</span>
+      </div>
+      <p>${escapeHtml(item.text)}</p>
+      <div class="drop-zone" data-drop-situation="${item.id}">
+        <span class="field-label">Best strategy or strategies</span>
+        <div class="selected-strategies">${selectedMarkup}</div>
+      </div>
+      <label>
+        <span>Why?</span>
+        <textarea name="fix-reason-${item.id}">${escapeHtml(entry.reason || "")}</textarea>
+      </label>
+    </article>
+    <section class="card strategy-bank">
+      <h3>Strategy Tiles</h3>
+      <div class="strategy-grid">
+        ${strategies.map((text, index) => {
+          const number = index + 1;
+          const used = selected.includes(number);
+          return `
+            <button class="strategy-tile${used ? " used" : ""}" draggable="true" data-strategy="${number}">
+              <span>${number}</span>
+              ${escapeHtml(text)}
+            </button>`;
+        }).join("")}
+      </div>
+    </section>`);
+}
+
+function scoreFixIt() {
+  let autoPoints = 0, shortPoints = 0;
+  for (const item of fixSituations) {
+    const entry = state.fix[item.id] || { strategies: [] };
+    if ((entry.strategies || []).some((choice) => item.primary.includes(Number(choice)))) autoPoints += 1;
+    shortPoints += completionPoint(entry.reason, 7);
+  }
+  return splitScore(autoPoints, fixSituations.length, shortPoints, fixSituations.length);
+}
+
+function renderConsequences() {
+  const index = getActivityIndex("consequence");
+  const item = consequences[index];
+  return singleQuestion("consequence", "Consequence Cards", "Match each breakdown consequence to the family function.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Consequence ${index + 1}</h3>
+        <span class="tag auto-tag">1 pt auto</span>
+      </div>
+      <p>${escapeHtml(item.text)}</p>
+      ${functionSelect(`consequence-${index}`, state.consequence[index] || "")}
+    </article>`);
+}
+
+function scoreConsequences() {
+  const points = consequences.reduce((sum, item, index) => sum + (state.consequence[index] === item.functionName ? 1 : 0), 0);
+  return splitScore(points, consequences.length, 0, 0);
+}
+
+function renderRanking() {
+  return `
+    ${sectionIntro("Importance Ranking", "Rank the six functions from most important to least important and defend your choices.")}
+    <section class="card focus-card">
+      <div class="card-header">
+        <h3>Ranked Functions</h3>
+        <span class="tag auto-tag">3 auto</span>
+      </div>
+      <p class="muted">Move the functions into your own order from most important to least important. (3 pts for changing from the default order)</p>
+      <div class="rank-list">
+        ${state.ranking.order.map((name, rankIndex) => `
+          <div class="rank-item">
+            <span class="rank-number">${rankIndex + 1}</span>
+            <strong>${escapeHtml(name)}</strong>
+            <button class="icon-button" data-rank-move="${rankIndex}" data-direction="-1" aria-label="Move ${escapeHtml(name)} up"${rankIndex === 0 ? " disabled" : ""}>↑</button>
+            <button class="icon-button" data-rank-move="${rankIndex}" data-direction="1" aria-label="Move ${escapeHtml(name)} down"${rankIndex === state.ranking.order.length - 1 ? " disabled" : ""}>↓</button>
+          </div>`).join("")}
+      </div>
+    </section>
+    <section class="grid-list ranking-responses">
+      ${rankingPrompts.map((prompt, index) => `
+        <label class="card">
+          <div class="card-header">
+            <span>${escapeHtml(prompt)}</span>
+            <span class="tag review-tag">1 ★ review</span>
+          </div>
+          <textarea name="ranking-response-${index}">${escapeHtml(state.ranking.responses[index] || "")}</textarea>
+        </label>`).join("")}
+    </section>`;
+}
+
+function scoreRanking() {
+  const isEngaged = state.ranking.order.some((name, i) => name !== FUNCTIONS[i]);
+  const autoPoints = isEngaged ? 3 : 0;
+  const shortPoints = rankingPrompts.reduce((sum, _, i) => sum + completionPoint(state.ranking.responses[i], 8), 0);
+  return splitScore(autoPoints, 3, shortPoints, rankingPrompts.length);
+}
+
+function renderCaseStudy() {
+  const question = caseStudy.questions[getActivityIndex("case")];
+  return singleQuestion("case", "Case Study: The Brennan Family", "Analyze the family across functions, healthy characteristics, and Fix It strategies.", `
+    <section class="card">
+      <h3>The Brennan Family</h3>
+      <p>${escapeHtml(caseStudy.text)}</p>
+      <div class="two-col">
+        <div>
+          <h3>What is going well</h3>
+          <ul class="mini-list">${caseStudy.goingWell.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        </div>
+        <div>
+          <h3>What is struggling</h3>
+          <ul class="mini-list">${caseStudy.struggling.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+        </div>
+      </div>
+    </section>
+    <div class="card focus-card">
+      <div class="card-header">
+        <span>${escapeHtml(question.prompt)}</span>
+        <span class="tag review-tag">2 ★ review</span>
+      </div>
+      <label>
+        <span class="sr-only">Your response</span>
+        <textarea name="case-response-${question.id}">${escapeHtml(state.caseStudy[question.id] || "")}</textarea>
+      </label>
+    </div>`);
+}
+
+function scoreCaseStudy() {
+  let shortPoints = 0;
+  for (const question of caseStudy.questions) {
+    const value = state.caseStudy[question.id] || "";
+    shortPoints += completionPoint(value, 12) + keywordPoint(value, question.keywords);
+  }
+  return splitScore(0, 0, shortPoints, caseStudy.questions.length * 2);
+}
+
+function handleInput(event) {
+  const target = event.target;
+  const name = target.name || target.id || "";
+
+  if (target.id === "firstName") state.student.firstName = target.value;
+  if (target.id === "lastName") state.student.lastName = target.value;
+  if (target.id === "classPeriod") state.student.period = target.value;
+  if (target.id === "teacherSelect") state.student.teacher = target.value;
+
+  if (name.startsWith("sorting-")) state.sorting[name.split("-")[1]] = target.value;
+
+  if (name.startsWith("healthy-label-")) {
+    const id = name.split("-")[2];
+    state.healthy[id] = state.healthy[id] || {};
+    state.healthy[id].label = target.value;
+  }
+  if (name.startsWith("healthy-reason-")) {
+    const id = name.split("-")[2];
+    state.healthy[id] = state.healthy[id] || {};
+    state.healthy[id].reason = target.value;
+  }
+
+  if (name.startsWith("missing-function-")) {
+    const id = name.split("-")[2];
+    state.missing[id] = state.missing[id] || {};
+    state.missing[id].functionName = target.value;
+  }
+  if (name.startsWith("missing-effect-")) {
+    const id = name.split("-")[2];
+    state.missing[id] = state.missing[id] || {};
+    state.missing[id].effect = target.value;
+  }
+  if (name.startsWith("missing-affected-")) {
+    const id = name.split("-")[2];
+    state.missing[id] = state.missing[id] || {};
+    state.missing[id].affected = target.value;
+  }
+
+  if (name.startsWith("fix-strategy-")) {
+    const id = name.split("-")[2];
+    state.fix[id] = state.fix[id] || { strategies: [] };
+    const selected = Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map((item) => Number(item.value));
+    state.fix[id].strategies = selected;
+  }
+  if (name.startsWith("fix-reason-")) {
+    const id = name.split("-")[2];
+    state.fix[id] = state.fix[id] || { strategies: [] };
+    state.fix[id].reason = target.value;
+  }
+
+  if (name.startsWith("consequence-")) state.consequence[name.split("-")[1]] = target.value;
+  if (name.startsWith("ranking-response-")) state.ranking.responses[name.split("-")[2]] = target.value;
+  if (name.startsWith("case-response-")) state.caseStudy[name.split("-")[2]] = target.value;
+
+  saveState();
+  renderNav();
+  renderScores();
+}
+
+function addStrategyToCurrentSituation(strategyNumber) {
+  const item = fixSituations[getActivityIndex("fix")];
+  state.fix[item.id] = state.fix[item.id] || { strategies: [] };
+  const current = new Set(state.fix[item.id].strategies || []);
+  current.add(Number(strategyNumber));
+  state.fix[item.id].strategies = Array.from(current).sort((a, b) => a - b);
+  saveState();
+  renderApp();
+}
+
+function removeStrategyFromCurrentSituation(strategyNumber) {
+  const item = fixSituations[getActivityIndex("fix")];
+  state.fix[item.id] = state.fix[item.id] || { strategies: [] };
+  state.fix[item.id].strategies = (state.fix[item.id].strategies || []).filter((number) => number !== Number(strategyNumber));
+  saveState();
+  renderApp();
+}
+
+function handleClick(event) {
+  const nav = event.target.closest("[data-nav]");
+  if (nav) setActive(nav.dataset.nav);
+
+  const stepButton = event.target.closest("[data-step]");
+  if (stepButton) {
+    setActivityIndex(activeActivity, getActivityIndex(activeActivity) + Number(stepButton.dataset.step));
+  }
+
+  const jumpButton = event.target.closest("[data-step-jump]");
+  if (jumpButton) {
+    setActivityIndex(activeActivity, Number(jumpButton.dataset.stepJump));
+  }
+
+  const referenceButton = event.target.closest("[data-reference-mode]");
+  if (referenceButton) {
+    state.referenceMode = referenceButton.dataset.referenceMode;
+    saveState();
+    renderApp();
+  }
+
+  const strategyTile = event.target.closest("[data-strategy]");
+  if (strategyTile) {
+    addStrategyToCurrentSituation(strategyTile.dataset.strategy);
+  }
+
+  const removeStrategy = event.target.closest("[data-remove-strategy]");
+  if (removeStrategy) {
+    removeStrategyFromCurrentSituation(removeStrategy.dataset.removeStrategy);
+  }
+
+  const emailAction = event.target.closest("[data-email-action]");
+  if (emailAction && lastSubmission) {
+    const action = emailAction.dataset.emailAction;
+    if (action === "download") {
+      downloadReport(lastSubmission.report, lastSubmission.filename);
+      showToast("Results file downloaded again.");
+    }
+    if (action === "gmail") {
+      openGmail(lastSubmission.report, lastSubmission.filename, lastSubmission.submittedAt);
+      showToast("Gmail opened again.");
+    }
+    if (action === "draft") {
+      createGmailDraft(lastSubmission.report, lastSubmission.filename, lastSubmission.submittedAt)
+        .then(() => showToast("Gmail draft requested again."))
+        .catch(() => showToast("Gmail draft retry did not complete."));
+    }
+  }
+
+  const moveButton = event.target.closest("[data-rank-move]");
+  if (moveButton) {
+    const index = Number(moveButton.dataset.rankMove);
+    const direction = Number(moveButton.dataset.direction);
+    const nextIndex = index + direction;
+    if (nextIndex >= 0 && nextIndex < state.ranking.order.length) {
+      const order = state.ranking.order;
+      [order[index], order[nextIndex]] = [order[nextIndex], order[index]];
+      saveState();
+      renderApp();
+    }
+  }
+}
+
+function handleDragStart(event) {
+  const tile = event.target.closest("[data-strategy]");
+  if (!tile) return;
+  event.dataTransfer.setData("text/plain", tile.dataset.strategy);
+  event.dataTransfer.effectAllowed = "copy";
+}
+
+function handleDragOver(event) {
+  const zone = event.target.closest("[data-drop-situation]");
+  if (!zone) return;
+  event.preventDefault();
+  zone.classList.add("drag-over");
+}
+
+function handleDragLeave(event) {
+  const zone = event.target.closest("[data-drop-situation]");
+  if (zone) zone.classList.remove("drag-over");
+}
+
+function handleDrop(event) {
+  const zone = event.target.closest("[data-drop-situation]");
+  if (!zone) return;
+  event.preventDefault();
+  zone.classList.remove("drag-over");
+  const strategyNumber = event.dataTransfer.getData("text/plain");
+  if (strategyNumber) addStrategyToCurrentSituation(strategyNumber);
+}
+
+function buildReport() {
+  const { scores, total, autoTotal, shortTotal } = getScores();
+  const name = studentFullName();
+  const lines = [];
+
+  lines.push("============================================================");
+  lines.push("FAMILY FUNCTIONS & HEALTHY FAMILIES — RESULTS REPORT");
+  lines.push("============================================================");
+  lines.push(`Student:      ${name || "Not entered"}`);
+  lines.push(`Class period: ${state.student.period || "Not entered"}`);
+  lines.push(`Teacher:      ${getTeacher().name}`);
+  lines.push(`Total score:  ${total.points} / 100 pts`);
+  lines.push(`  Auto-graded:    ${autoTotal.points} / ${autoTotal.possible} pts`);
+  lines.push(`  Short answers:  ${shortTotal.points} / ${shortTotal.possible} pts (provisional — see section below)`);
+  lines.push("");
+
+  lines.push("------------------------------------------------------------");
+  lines.push("AUTO-GRADED RESULTS");
+  lines.push("------------------------------------------------------------");
+
+  const sortScore = scores.sorting;
+  lines.push(`Function Sorting: ${sortScore.auto.points} / ${sortScore.auto.possible} pts`);
+  for (const card of sortingCards) {
+    const answer = state.sorting[card.id] || "[blank]";
+    const correct = answer === card.primary;
+    lines.push(`  ${card.id}. Student: ${answer} | Correct: ${card.primary} ${correct ? "✓" : "✗"}`);
+  }
+  lines.push("");
+
+  const healthyScore = scores.healthy;
+  lines.push(`Healthy or Unhealthy (labels): ${healthyScore.auto.points} / ${healthyScore.auto.possible} pts`);
+  for (const item of healthyScenarios) {
+    const entry = state.healthy[item.id] || {};
+    const correct = entry.label === item.answer;
+    lines.push(`  ${item.id}. Student: ${entry.label || "[blank]"} | Correct: ${item.answer} ${correct ? "✓" : "✗"}`);
+  }
+  lines.push("");
+
+  const missingScore = scores.missing;
+  lines.push(`What's Missing (function ID): ${missingScore.auto.points} / ${missingScore.auto.possible} pts`);
+  for (const card of missingCards) {
+    const entry = state.missing[card.id] || {};
+    const correct = entry.functionName === card.answer;
+    lines.push(`  ${card.id}. ${card.family} | Student: ${entry.functionName || "[blank]"} | Correct: ${card.answer} ${correct ? "✓" : "✗"}`);
+  }
+  lines.push("");
+
+  const fixScore = scores.fix;
+  lines.push(`Fix It (strategy selection): ${fixScore.auto.points} / ${fixScore.auto.possible} pts`);
+  for (const item of fixSituations) {
+    const entry = state.fix[item.id] || {};
+    const selected = (entry.strategies || []).join(", ") || "[blank]";
+    const correct = (entry.strategies || []).some((c) => item.primary.includes(Number(c)));
+    lines.push(`  ${item.id}. Selected: ${selected} | Primary: ${item.primary.join(", ")} ${correct ? "✓" : "✗"}`);
+  }
+  lines.push("");
+
+  const conScore = scores.consequence;
+  lines.push(`Consequences: ${conScore.auto.points} / ${conScore.auto.possible} pts`);
+  consequences.forEach((item, index) => {
+    const answer = state.consequence[index] || "[blank]";
+    const correct = answer === item.functionName;
+    lines.push(`  ${index + 1}. Student: ${answer} | Correct: ${item.functionName} ${correct ? "✓" : "✗"}`);
+  });
+  lines.push("");
+
+  const rankScore = scores.ranking;
+  const isEngaged = state.ranking.order.some((n, i) => n !== FUNCTIONS[i]);
+  lines.push(`Ranking (re-ordered from default): ${rankScore.auto.points} / ${rankScore.auto.possible} pts — ${isEngaged ? "Yes ✓" : "No ✗"}`);
+  lines.push("  Order: " + state.ranking.order.map((n, i) => `${i + 1}. ${n}`).join(" | "));
+  lines.push("");
+
+  lines.push("------------------------------------------------------------");
+  lines.push(`SHORT ANSWER RESPONSES — TEACHER REVIEW (${shortTotal.possible} pts total)`);
+  lines.push("Provisional word-count score shown. Assign final points as needed.");
+  lines.push("------------------------------------------------------------");
+
+  lines.push("");
+  lines.push(`Healthy or Unhealthy — Written Reasons (${healthyScore.short.possible} pts, 1 pt each)`);
+  for (const item of healthyScenarios) {
+    const entry = state.healthy[item.id] || {};
+    const wc = wordCount(entry.reason);
+    lines.push(`  ${item.id}. [${wc} words] ${entry.reason || "[blank]"}`);
+    lines.push(`     Scenario: ${item.text}`);
+  }
+  lines.push("");
+
+  lines.push(`What's Missing — Written Responses (${missingScore.short.possible} pts, 1 pt each)`);
+  for (const card of missingCards) {
+    const entry = state.missing[card.id] || {};
+    lines.push(`  ${card.id}. ${card.family}`);
+    lines.push(`     Effect [${wordCount(entry.effect)} words]: ${entry.effect || "[blank]"}`);
+    lines.push(`     Most affected [${wordCount(entry.affected)} words]: ${entry.affected || "[blank]"}`);
+  }
+  lines.push("");
+
+  lines.push(`Fix It — Written Reasons (${fixScore.short.possible} pts, 1 pt each)`);
+  for (const item of fixSituations) {
+    const entry = state.fix[item.id] || {};
+    const wc = wordCount(entry.reason);
+    lines.push(`  ${item.id}. [${wc} words] ${entry.reason || "[blank]"}`);
+    lines.push(`     Situation: ${item.text}`);
+  }
+  lines.push("");
+
+  lines.push(`Ranking Written Responses (${rankScore.short.possible} pts, 1 pt each)`);
+  rankingPrompts.forEach((prompt, index) => {
+    const wc = wordCount(state.ranking.responses[index]);
+    lines.push(`  Q${index + 1} [${wc} words]: ${state.ranking.responses[index] || "[blank]"}`);
+    lines.push(`     Prompt: ${prompt}`);
+  });
+  lines.push("");
+
+  const caseScore = scores.case;
+  lines.push(`Case Study — The Brennan Family (${caseScore.short.possible} pts, 2 pts each)`);
+  caseStudy.questions.forEach((question) => {
+    const value = state.caseStudy[question.id] || "";
+    const wc = wordCount(value);
+    lines.push(`  Q${question.id} [${wc} words]: ${value || "[blank]"}`);
+    lines.push(`     Prompt: ${question.prompt}`);
+  });
+  lines.push("");
+  lines.push("============================================================");
+
+  return lines.join("\n");
+}
+
+function submissionTimestamp() {
+  const now = new Date();
+  submissionCounter += 1;
+  const stamp = `${now.toISOString().replace(/[:.]/g, "-")}-${submissionCounter}`;
+  const label = now.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return { stamp, label };
+}
+
+function makeSubmissionPackage() {
+  const report = buildReport();
+  const { stamp, label } = submissionTimestamp();
+  const safeName = (studentFullName() || "student").trim().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "student";
+  const filename = `family-functions-results-${safeName}-${stamp}.txt`;
+  return { report, filename, submittedAt: label };
+}
+
+function downloadReport(report, filename) {
+  const blob = new Blob([report], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  return filename;
+}
+
+function openGmail(report, filename, submittedAt) {
+  const { total } = getScores();
+  const name = studentFullName();
+  const teacher = getTeacher();
+  const subject = `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`;
+  const summary = [
+    `Student: ${name || "Not entered"}`,
+    `Class period: ${state.student.period || "Not entered"}`,
+    `Teacher: ${teacher.name}`,
+    `Overall score: ${total.points}/${total.possible} (${total.percent}%)`,
+    "",
+    `Results file generated: ${filename}`,
+    "",
+    "The complete response report is included in the generated text file.",
+  ].join("\n");
+  const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(teacher.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+async function createGmailDraft(report, filename, submittedAt) {
+  if (!APPS_SCRIPT_WEB_APP_URL) return false;
+  const { total } = getScores();
+  const name = studentFullName();
+  const teacher = getTeacher();
+  const payload = {
+    to: teacher.email,
+    subject: `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`,
+    filename,
+    report,
+    summary: `Student: ${name || "Not entered"}\nClass period: ${state.student.period || "Not entered"}\nTeacher: ${teacher.name}\nOverall score: ${total.points}/${total.possible} (${total.percent}%)`,
+  };
+  postToAppsScript(payload);
+  return true;
+}
+
+function postToAppsScript(payload) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = APPS_SCRIPT_WEB_APP_URL;
+  form.target = "draftFrame";
+  form.style.display = "none";
+
+  for (const [key, value] of Object.entries(payload)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = key;
+    input.value = value;
+    form.append(input);
+  }
+
+  document.body.append(form);
+  form.submit();
+  window.setTimeout(() => form.remove(), 1000);
+}
+
+async function submitWork() {
+  const submission = makeSubmissionPackage();
+  lastSubmission = submission;
+  renderSubmissionPanel("Preparing results...");
+
+  if (!APPS_SCRIPT_WEB_APP_URL) {
+    openGmail(submission.report, submission.filename, submission.submittedAt);
+  }
+
+  const filename = downloadReport(submission.report, submission.filename);
+  const drafted = await createGmailDraft(submission.report, filename, submission.submittedAt).catch(() => false);
+  if (drafted) {
+    renderSubmissionPanel("Gmail draft requested. You can retry or download again below.");
+    showToast("A Gmail draft was requested and the results file was generated.");
+  } else {
+    renderSubmissionPanel("Results prepared. Use the buttons below if Gmail did not open or the download was missed.");
+    showToast("A Gmail message opened and the results file was generated.");
+  }
+}
+
+function renderSubmissionPanel(message = "") {
+  const panel = document.getElementById("submissionPanel");
+  if (!panel) return;
+  if (!lastSubmission) {
+    panel.innerHTML = "";
+    return;
+  }
+  panel.innerHTML = `
+    <p>${escapeHtml(message || "Results are ready.")}</p>
+    <p class="muted">Last prepared: ${escapeHtml(lastSubmission.submittedAt)}</p>
+    <div class="submission-actions">
+      <button class="ghost-button" data-email-action="download">Download again</button>
+      ${APPS_SCRIPT_WEB_APP_URL
+        ? `<button class="ghost-button" data-email-action="draft">Create Gmail draft again</button>`
+        : `<button class="ghost-button" data-email-action="gmail">Open Gmail again</button>`}
+    </div>`;
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  window.clearTimeout(showToast.timer);
+  showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 3600);
+}
+
+document.addEventListener("input", handleInput);
+document.addEventListener("change", handleInput);
+document.addEventListener("click", handleClick);
+document.addEventListener("dragstart", handleDragStart);
+document.addEventListener("dragover", handleDragOver);
+document.addEventListener("dragleave", handleDragLeave);
+document.addEventListener("drop", handleDrop);
+document.getElementById("submitWork").addEventListener("click", submitWork);
+
+renderApp();
+
+    </script>
+  </body>
+</html>
