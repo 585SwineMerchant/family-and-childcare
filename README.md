@@ -9,7 +9,9 @@ This is a static GitHub Pages version of the Family Functions & Healthy Families
 3. Set the source to the main branch and root folder.
 4. Open the published Pages URL.
 
-Student work is saved locally in the browser while they are working. The score updates automatically.
+Student work is saved locally in the browser while they are working. The score updates automatically. Each activity displays one prompt at a time with back/next controls so students can review and revise before submitting.
+
+The Greece Central Schools logo is loaded from the district's official website asset URL. If you need the page to work fully offline, download that image and update the `img` tag in `index.html` to point to the local copy.
 
 ## Gmail results
 
@@ -21,4 +23,3 @@ Recommended Apps Script deployment settings:
 
 - Execute as: the teacher account that should own the Gmail draft
 - Who has access: users in the school domain, or anyone with the link if your district permits it
-

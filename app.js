@@ -11,12 +11,42 @@ const FUNCTIONS = [
 ];
 
 const functionNotes = {
-  Economic: "Meeting material needs such as food, housing, clothing, supplies, and money planning.",
-  Protection: "Keeping family members physically and emotionally safe, including health and emergency care.",
-  Education: "Teaching values, culture, school habits, life skills, and practical knowledge.",
-  Recreation: "Building connection through play, relaxation, traditions, and shared fun.",
-  "Affection and Belonging": "Helping members feel loved, valued, comforted, and emotionally secure.",
-  Adaptation: "Adjusting roles, routines, and expectations when life changes or stress appears.",
+  Economic: {
+    definition: "Meeting material needs such as food, housing, clothing, supplies, and money planning.",
+    example: "A family builds a budget and makes sure school supplies, winter coats, and meals are covered.",
+    consequence: "Family members may go without food, stable housing, health care, or chances to join activities.",
+    community: "Schools, food banks, and support programs may need to help when families cannot meet economic needs.",
+  },
+  Protection: {
+    definition: "Keeping family members physically and emotionally safe, including health and emergency care.",
+    example: "A parent schedules checkups, keeps a first aid kit stocked, and teaches what to do in a fire.",
+    consequence: "Children may face harm with no adult help, and it becomes harder to learn, connect, or adapt.",
+    community: "Teachers, counselors, hospitals, and child protection services may need to step in.",
+  },
+  Education: {
+    definition: "Teaching values, culture, school habits, life skills, and practical knowledge.",
+    example: "A grandparent helps a child read each night or teaches cultural recipes and family stories.",
+    consequence: "Children may fall behind in school, miss guidance, or feel disconnected from their identity.",
+    community: "When many families cannot support learning, the whole community's future workforce is affected.",
+  },
+  Recreation: {
+    definition: "Building connection through play, relaxation, traditions, and shared fun.",
+    example: "A family keeps a weekly game night, park visit, movie night, or cooking tradition.",
+    consequence: "Relationships can become only about chores and needs, and children may seek connection elsewhere.",
+    community: "Parks, clubs, youth programs, and community centers often fill the need for safe connection and fun.",
+  },
+  "Affection and Belonging": {
+    definition: "Helping members feel loved, valued, comforted, and emotionally secure.",
+    example: "A parent comforts a child after a failure and reminds them they are loved and valued.",
+    consequence: "Children may struggle to trust others, manage emotions, or build healthy relationships.",
+    community: "Counselors, therapists, and social workers often help people heal from a lack of belonging.",
+  },
+  Adaptation: {
+    definition: "Adjusting roles, routines, and expectations when life changes or stress appears.",
+    example: "After a job loss or move, family members make a new plan and share responsibilities.",
+    consequence: "Responsibilities may become unfair, routines may fall apart, and members can feel alone in crisis.",
+    community: "During disasters, downturns, or health crises, families that adapt well help communities recover faster.",
+  },
 };
 
 const healthyTraits = [
@@ -110,15 +140,6 @@ const consequences = [
   { functionName: "Adaptation", text: "Families can become stuck during change, roles become unfair, and stress strains relationships." },
 ];
 
-const realWorld = [
-  { functionName: "Economic", text: "When families cannot meet economic needs, communities see higher rates of food insecurity, unstable housing, and school dropout." },
-  { functionName: "Protection", text: "When protection breaks down, teachers, neighbors, counselors, hospitals, and agencies may need to step in." },
-  { functionName: "Education", text: "When families support education, children are more likely to graduate, keep learning, and find stable work." },
-  { functionName: "Recreation", text: "Shared recreation helps young people build safe connection; parks and youth programs often fill this gap." },
-  { functionName: "Affection and Belonging", text: "Secure attachment supports mental health, relationships, and behavior at school and beyond." },
-  { functionName: "Adaptation", text: "Strong family networks help communities recover from disasters, economic downturns, and health crises." },
-];
-
 const caseStudy = {
   text: "The Brennan family lives in a three-bedroom house. There are four kids: Tyler (16), Jasmine (13), Marco (10), and baby Lily (2). Their mom, Diane, works full-time as a home health aide. Their dad, Robert, was laid off six months ago and has been home since.",
   goingWell: [
@@ -143,11 +164,11 @@ const caseStudy = {
 };
 
 const rankingPrompts = [
-  "Which function did your group rank #1? Why did you agree on that one?",
+  "Which function did you rank #1? Why did you choose that one?",
   "Which function did you disagree about the most? What were the different arguments?",
   "Is there a function that cannot exist without another one? Which ones depend on each other?",
   "Could a family survive long-term if one function completely disappeared? Which would be hardest to lose?",
-  "Did your ranking change during the discussion? What changed your mind, if anything?",
+  "Did your ranking change as you thought through the functions? What changed your mind, if anything?",
 ];
 
 const activities = [
@@ -158,19 +179,19 @@ const activities = [
   { id: "fix", title: "Fix It", render: renderFixIt, score: scoreFixIt },
   { id: "consequence", title: "Consequences", render: renderConsequences, score: scoreConsequences },
   { id: "ranking", title: "Ranking", render: renderRanking, score: scoreRanking },
-  { id: "world", title: "Real World", render: renderWorld, score: scoreWorld },
   { id: "case", title: "Case Study", render: renderCaseStudy, score: scoreCaseStudy },
 ];
 
 const defaultState = {
-  student: { name: "", period: "", date: new Date().toISOString().slice(0, 10) },
+  student: { firstName: "", lastName: "", period: "" },
+  progress: {},
+  referenceMode: "definition",
   sorting: {},
   healthy: {},
   missing: {},
   fix: {},
   consequence: {},
   ranking: { order: [...FUNCTIONS], responses: {} },
-  world: {},
   caseStudy: {},
 };
 
@@ -181,7 +202,13 @@ function loadState() {
   const saved = localStorage.getItem("familyFunctionsPacket");
   if (!saved) return structuredClone(defaultState);
   try {
-    return mergeState(structuredClone(defaultState), JSON.parse(saved));
+    const merged = mergeState(structuredClone(defaultState), JSON.parse(saved));
+    if (merged.student.name && !merged.student.firstName && !merged.student.lastName) {
+      const parts = merged.student.name.trim().split(/\s+/);
+      merged.student.firstName = parts.shift() || "";
+      merged.student.lastName = parts.join(" ");
+    }
+    return merged;
   } catch {
     return structuredClone(defaultState);
   }
@@ -211,6 +238,10 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function studentFullName() {
+  return `${state.student.firstName || ""} ${state.student.lastName || ""}`.trim();
+}
+
 function wordCount(value) {
   return String(value || "").trim().split(/\s+/).filter(Boolean).length;
 }
@@ -237,6 +268,60 @@ function getScores() {
   return { scores, total: scoreObject(points, possible) };
 }
 
+function getActivityTotal(id) {
+  const totals = {
+    sorting: sortingCards.length,
+    healthy: healthyScenarios.length,
+    missing: missingCards.length,
+    fix: fixSituations.length,
+    consequence: consequences.length,
+    ranking: rankingPrompts.length + 1,
+    case: caseStudy.questions.length,
+  };
+  return totals[id] || 1;
+}
+
+function getActivityIndex(id) {
+  const total = getActivityTotal(id);
+  const current = Number(state.progress[id] || 0);
+  return Math.min(Math.max(current, 0), total - 1);
+}
+
+function setActivityIndex(id, index) {
+  state.progress[id] = Math.min(Math.max(index, 0), getActivityTotal(id) - 1);
+  saveState();
+  renderApp();
+}
+
+function progressDots(id, total, current) {
+  if (total <= 1) return "";
+  return `
+    <div class="progress-dots" aria-label="Question progress">
+      ${Array.from({ length: total }, (_, index) => `
+        <button class="dot${index === current ? " active" : ""}" data-step-jump="${index}" aria-label="Go to item ${index + 1}"></button>`).join("")}
+    </div>`;
+}
+
+function questionPager(id, total, current) {
+  if (total <= 1) return "";
+  return `
+    <div class="question-pager">
+      <button class="ghost-button" data-step="-1"${current === 0 ? " disabled" : ""}>Back</button>
+      <span>Item ${current + 1} of ${total}</span>
+      <button class="primary-button" data-step="1"${current === total - 1 ? " disabled" : ""}>Next</button>
+    </div>
+    ${progressDots(id, total, current)}`;
+}
+
+function singleQuestion(id, title, intro, body) {
+  const total = getActivityTotal(id);
+  const current = getActivityIndex(id);
+  return `
+    ${sectionIntro(title, intro)}
+    ${body}
+    ${questionPager(id, total, current)}`;
+}
+
 function setActive(id) {
   activeActivity = id;
   renderApp();
@@ -252,9 +337,9 @@ function renderApp() {
 }
 
 function renderStudentFields() {
-  document.getElementById("studentName").value = state.student.name;
+  document.getElementById("firstName").value = state.student.firstName;
+  document.getElementById("lastName").value = state.student.lastName;
   document.getElementById("classPeriod").value = state.student.period;
-  document.getElementById("workDate").value = state.student.date;
 }
 
 function renderNav() {
@@ -300,14 +385,28 @@ function functionSelect(name, selected = "", label = "Family function") {
 }
 
 function renderReference() {
+  const mode = state.referenceMode === "impact" ? "impact" : "definition";
   return `
-    ${sectionIntro("Healthy Family Reference Card", "Keep these ideas in view while completing each activity.")}
+    ${sectionIntro("Healthy Family Reference Card", "Use the switch to study either what each function looks like when it is met or what can happen when it breaks down.")}
+    <section class="mode-switch" aria-label="Reference card mode">
+      <button class="${mode === "definition" ? "active" : ""}" data-reference-mode="definition">Definition + Example</button>
+      <button class="${mode === "impact" ? "active" : ""}" data-reference-mode="impact">Family + Community Impact</button>
+    </section>
     <section class="reference-grid">
-      ${FUNCTIONS.map((name) => `
+      ${FUNCTIONS.map((name) => {
+        const note = functionNotes[name];
+        return `
         <article class="card reference-card">
           <h3>${escapeHtml(name)}</h3>
-          <p>${escapeHtml(functionNotes[name])}</p>
-        </article>`).join("")}
+          ${mode === "definition" ? `
+            <p>${escapeHtml(note.definition)}</p>
+            <p><strong>Example:</strong> ${escapeHtml(note.example)}</p>
+          ` : `
+            <p><strong>Family impact:</strong> ${escapeHtml(note.consequence)}</p>
+            <p><strong>Community impact:</strong> ${escapeHtml(note.community)}</p>
+          `}
+        </article>`;
+      }).join("")}
     </section>
     <section class="card">
       <h3>Healthy Family Characteristics</h3>
@@ -322,19 +421,16 @@ function scoreReference() {
 }
 
 function renderSorting() {
-  return `
-    ${sectionIntro("Function Sorting Cards", "Choose the strongest family function for each scenario.")}
-    <section class="grid-list">
-      ${sortingCards.map((card) => `
-        <article class="card">
-          <div class="card-header">
-            <h3>Scenario Card ${card.id}</h3>
-            <span class="tag">1 point</span>
-          </div>
-          <p class="scenario-text">${escapeHtml(card.text)}</p>
-          ${functionSelect(`sorting-${card.id}`, state.sorting[card.id] || "")}
-        </article>`).join("")}
-    </section>`;
+  const card = sortingCards[getActivityIndex("sorting")];
+  return singleQuestion("sorting", "Function Sorting Cards", "Choose the strongest family function for each scenario.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Scenario Card ${card.id}</h3>
+        <span class="tag">1 point</span>
+      </div>
+      <p class="scenario-text">${escapeHtml(card.text)}</p>
+      ${functionSelect(`sorting-${card.id}`, state.sorting[card.id] || "")}
+    </article>`);
 }
 
 function scoreSorting() {
@@ -343,32 +439,27 @@ function scoreSorting() {
 }
 
 function renderHealthy() {
-  return `
-    ${sectionIntro("Healthy or Unhealthy?", "Circle the best label and explain the reason in one complete sentence.")}
-    <section class="grid-list">
-      ${healthyScenarios.map((item) => {
-        const entry = state.healthy[item.id] || {};
-        return `
-          <article class="card">
-            <div class="card-header">
-              <h3>Scenario ${item.id}</h3>
-              <span class="tag">2 points</span>
-            </div>
-            <p>${escapeHtml(item.text)}</p>
-            <div class="choice-row" role="radiogroup" aria-label="Scenario ${item.id}">
-              ${["HEALTHY", "UNHEALTHY"].map((choice) => `
-                <label class="choice">
-                  <input type="radio" name="healthy-label-${item.id}" value="${choice}"${entry.label === choice ? " checked" : ""}>
-                  <span>${choice}</span>
-                </label>`).join("")}
-            </div>
-            <label>
-              <span>Why?</span>
-              <textarea name="healthy-reason-${item.id}">${escapeHtml(entry.reason || "")}</textarea>
-            </label>
-          </article>`;
-      }).join("")}
-    </section>`;
+  const item = healthyScenarios[getActivityIndex("healthy")];
+  const entry = state.healthy[item.id] || {};
+  return singleQuestion("healthy", "Healthy or Unhealthy?", "Choose the best label and explain the reason in one complete sentence.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Scenario ${item.id}</h3>
+        <span class="tag">2 points</span>
+      </div>
+      <p>${escapeHtml(item.text)}</p>
+      <div class="choice-row" role="radiogroup" aria-label="Scenario ${item.id}">
+        ${["HEALTHY", "UNHEALTHY"].map((choice) => `
+          <label class="choice big-choice">
+            <input type="radio" name="healthy-label-${item.id}" value="${choice}"${entry.label === choice ? " checked" : ""}>
+            <span>${choice}</span>
+          </label>`).join("")}
+      </div>
+      <label>
+        <span>Why?</span>
+        <textarea name="healthy-reason-${item.id}">${escapeHtml(entry.reason || "")}</textarea>
+      </label>
+    </article>`);
 }
 
 function scoreHealthy() {
@@ -382,32 +473,27 @@ function scoreHealthy() {
 }
 
 function renderMissing() {
-  return `
-    ${sectionIntro("What's Missing?", "Identify the missing function, then explain the effect and who is most affected.")}
-    <section class="grid-list">
-      ${missingCards.map((card) => {
-        const entry = state.missing[card.id] || {};
-        return `
-          <article class="card">
-            <div class="card-header">
-              <h3>Card ${card.id}: ${escapeHtml(card.family)}</h3>
-              <span class="tag">3 points</span>
-            </div>
-            <p>${escapeHtml(card.text)}</p>
-            ${functionSelect(`missing-function-${card.id}`, entry.functionName || "", "Which function is not being met?")}
-            <div class="two-col">
-              <label>
-                <span>What effect does this have?</span>
-                <textarea name="missing-effect-${card.id}">${escapeHtml(entry.effect || "")}</textarea>
-              </label>
-              <label>
-                <span>Who is most affected, and how does life outside home change?</span>
-                <textarea name="missing-affected-${card.id}">${escapeHtml(entry.affected || "")}</textarea>
-              </label>
-            </div>
-          </article>`;
-      }).join("")}
-    </section>`;
+  const card = missingCards[getActivityIndex("missing")];
+  const entry = state.missing[card.id] || {};
+  return singleQuestion("missing", "What's Missing?", "Identify the missing function, then explain the effect and who is most affected.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Card ${card.id}: ${escapeHtml(card.family)}</h3>
+        <span class="tag">3 points</span>
+      </div>
+      <p>${escapeHtml(card.text)}</p>
+      ${functionSelect(`missing-function-${card.id}`, entry.functionName || "", "Which function is not being met?")}
+      <div class="two-col">
+        <label>
+          <span>What effect does this have?</span>
+          <textarea name="missing-effect-${card.id}">${escapeHtml(entry.effect || "")}</textarea>
+        </label>
+        <label>
+          <span>Who is most affected, and how does life outside home change?</span>
+          <textarea name="missing-affected-${card.id}">${escapeHtml(entry.affected || "")}</textarea>
+        </label>
+      </div>
+    </article>`);
 }
 
 function scoreMissing() {
@@ -422,42 +508,46 @@ function scoreMissing() {
 }
 
 function renderFixIt() {
-  return `
-    ${sectionIntro("Fix It Strategy Matching", "Select the strategy or strategies that best fit each situation and explain the connection.")}
-    <section class="card">
-      <h3>Strategy Cards</h3>
-      <div class="strategy-grid">
-        ${strategies.map((text, index) => `<p><strong>${index + 1}.</strong> ${escapeHtml(text)}</p>`).join("")}
+  const item = fixSituations[getActivityIndex("fix")];
+  const entry = state.fix[item.id] || { strategies: [] };
+  const selected = entry.strategies || [];
+  const selectedMarkup = selected.length
+    ? selected.map((number) => `
+      <button class="strategy-chip" data-remove-strategy="${number}" aria-label="Remove strategy ${number}">
+        <strong>${number}</strong> ${escapeHtml(strategies[number - 1])}
+      </button>`).join("")
+    : `<p class="muted">Drag a strategy tile here, or tap a tile to add it.</p>`;
+
+  return singleQuestion("fix", "Fix It Strategy Matching", "Drag strategy tiles into the situation they best match, then explain why.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Situation ${item.id}</h3>
+        <span class="tag">2 points</span>
       </div>
-    </section>
-    <section class="grid-list">
-      ${fixSituations.map((item) => {
-        const entry = state.fix[item.id] || { strategies: [] };
-        return `
-          <article class="card">
-            <div class="card-header">
-              <h3>Situation ${item.id}</h3>
-              <span class="tag">2 points</span>
-            </div>
-            <p>${escapeHtml(item.text)}</p>
-            <div class="choice-row">
-              ${strategies.map((_, index) => {
-                const number = index + 1;
-                const checked = (entry.strategies || []).includes(number);
-                return `
-                  <label class="choice">
-                    <input type="checkbox" name="fix-strategy-${item.id}" value="${number}"${checked ? " checked" : ""}>
-                    <span>${number}</span>
-                  </label>`;
-              }).join("")}
-            </div>
-            <label>
-              <span>Why?</span>
-              <textarea name="fix-reason-${item.id}">${escapeHtml(entry.reason || "")}</textarea>
-            </label>
-          </article>`;
-      }).join("")}
-    </section>`;
+      <p>${escapeHtml(item.text)}</p>
+      <div class="drop-zone" data-drop-situation="${item.id}">
+        <span class="field-label">Best strategy or strategies</span>
+        <div class="selected-strategies">${selectedMarkup}</div>
+      </div>
+      <label>
+        <span>Why?</span>
+        <textarea name="fix-reason-${item.id}">${escapeHtml(entry.reason || "")}</textarea>
+      </label>
+    </article>
+    <section class="card strategy-bank">
+      <h3>Strategy Tiles</h3>
+      <div class="strategy-grid">
+        ${strategies.map((text, index) => {
+          const number = index + 1;
+          const used = selected.includes(number);
+          return `
+            <button class="strategy-tile${used ? " used" : ""}" draggable="true" data-strategy="${number}">
+              <span>${number}</span>
+              ${escapeHtml(text)}
+            </button>`;
+        }).join("")}
+      </div>
+    </section>`);
 }
 
 function scoreFixIt() {
@@ -471,19 +561,17 @@ function scoreFixIt() {
 }
 
 function renderConsequences() {
-  return `
-    ${sectionIntro("Consequence Cards", "Match each breakdown consequence to the family function.")}
-    <section class="grid-list">
-      ${consequences.map((item, index) => `
-        <article class="card">
-          <div class="card-header">
-            <h3>Consequence ${index + 1}</h3>
-            <span class="tag">1 point</span>
-          </div>
-          <p>${escapeHtml(item.text)}</p>
-          ${functionSelect(`consequence-${index}`, state.consequence[index] || "")}
-        </article>`).join("")}
-    </section>`;
+  const index = getActivityIndex("consequence");
+  const item = consequences[index];
+  return singleQuestion("consequence", "Consequence Cards", "Match each breakdown consequence to the family function.", `
+    <article class="card focus-card">
+      <div class="card-header">
+        <h3>Consequence ${index + 1}</h3>
+        <span class="tag">1 point</span>
+      </div>
+      <p>${escapeHtml(item.text)}</p>
+      ${functionSelect(`consequence-${index}`, state.consequence[index] || "")}
+    </article>`);
 }
 
 function scoreConsequences() {
@@ -493,20 +581,21 @@ function scoreConsequences() {
 
 function renderRanking() {
   return `
-    ${sectionIntro("Importance Ranking", "Rank the six functions from most important to least important and defend the choices.")}
-    <section class="card">
+    ${sectionIntro("Importance Ranking", "Rank the six functions from most important to least important and defend your choices.")}
+    <section class="card focus-card">
       <h3>Ranked Functions</h3>
+      <p class="muted">Move the functions into your own order from most important to least important.</p>
       <div class="rank-list">
-        ${state.ranking.order.map((name, index) => `
+        ${state.ranking.order.map((name, rankIndex) => `
           <div class="rank-item">
-            <span class="rank-number">${index + 1}</span>
+            <span class="rank-number">${rankIndex + 1}</span>
             <strong>${escapeHtml(name)}</strong>
-            <button class="icon-button" data-rank-move="${index}" data-direction="-1" aria-label="Move ${escapeHtml(name)} up"${index === 0 ? " disabled" : ""}>↑</button>
-            <button class="icon-button" data-rank-move="${index}" data-direction="1" aria-label="Move ${escapeHtml(name)} down"${index === state.ranking.order.length - 1 ? " disabled" : ""}>↓</button>
+            <button class="icon-button" data-rank-move="${rankIndex}" data-direction="-1" aria-label="Move ${escapeHtml(name)} up"${rankIndex === 0 ? " disabled" : ""}>↑</button>
+            <button class="icon-button" data-rank-move="${rankIndex}" data-direction="1" aria-label="Move ${escapeHtml(name)} down"${rankIndex === state.ranking.order.length - 1 ? " disabled" : ""}>↓</button>
           </div>`).join("")}
       </div>
     </section>
-    <section class="grid-list">
+    <section class="grid-list ranking-responses">
       ${rankingPrompts.map((prompt, index) => `
         <label class="card">
           <span>${escapeHtml(prompt)}</span>
@@ -521,33 +610,9 @@ function scoreRanking() {
   return scoreObject(completeOrder + written, 6 + rankingPrompts.length);
 }
 
-function renderWorld() {
-  return `
-    ${sectionIntro("Real-World Connections", "Connect each family function to its wider effect on a community.")}
-    <section class="grid-list">
-      ${realWorld.map((item, index) => `
-        <article class="card">
-          <div class="card-header">
-            <h3>${escapeHtml(item.functionName)} Function</h3>
-            <span class="tag">1 point</span>
-          </div>
-          <p>${escapeHtml(item.text)}</p>
-          <label>
-            <span>Why does this function matter beyond just your own family?</span>
-            <textarea name="world-response-${index}">${escapeHtml(state.world[index] || "")}</textarea>
-          </label>
-        </article>`).join("")}
-    </section>`;
-}
-
-function scoreWorld() {
-  const points = realWorld.reduce((sum, _, index) => sum + completionPoint(state.world[index], 9), 0);
-  return scoreObject(points, realWorld.length);
-}
-
 function renderCaseStudy() {
-  return `
-    ${sectionIntro("Case Study: The Brennan Family", "Analyze the family across functions, healthy characteristics, and Fix It strategies.")}
+  const question = caseStudy.questions[getActivityIndex("case")];
+  return singleQuestion("case", "Case Study: The Brennan Family", "Analyze the family across functions, healthy characteristics, and Fix It strategies.", `
     <section class="card">
       <h3>The Brennan Family</h3>
       <p>${escapeHtml(caseStudy.text)}</p>
@@ -562,13 +627,10 @@ function renderCaseStudy() {
         </div>
       </div>
     </section>
-    <section class="grid-list">
-      ${caseStudy.questions.map((question) => `
-        <label class="card">
-          <span>${escapeHtml(question.prompt)}</span>
-          <textarea name="case-response-${question.id}">${escapeHtml(state.caseStudy[question.id] || "")}</textarea>
-        </label>`).join("")}
-    </section>`;
+    <label class="card focus-card">
+      <span>${escapeHtml(question.prompt)}</span>
+      <textarea name="case-response-${question.id}">${escapeHtml(state.caseStudy[question.id] || "")}</textarea>
+    </label>`);
 }
 
 function scoreCaseStudy() {
@@ -585,9 +647,9 @@ function handleInput(event) {
   const target = event.target;
   const name = target.name || target.id || "";
 
-  if (target.id === "studentName") state.student.name = target.value;
+  if (target.id === "firstName") state.student.firstName = target.value;
+  if (target.id === "lastName") state.student.lastName = target.value;
   if (target.id === "classPeriod") state.student.period = target.value;
-  if (target.id === "workDate") state.student.date = target.value;
 
   if (name.startsWith("sorting-")) state.sorting[name.split("-")[1]] = target.value;
 
@@ -632,7 +694,6 @@ function handleInput(event) {
 
   if (name.startsWith("consequence-")) state.consequence[name.split("-")[1]] = target.value;
   if (name.startsWith("ranking-response-")) state.ranking.responses[name.split("-")[2]] = target.value;
-  if (name.startsWith("world-response-")) state.world[name.split("-")[2]] = target.value;
   if (name.startsWith("case-response-")) state.caseStudy[name.split("-")[2]] = target.value;
 
   saveState();
@@ -640,9 +701,54 @@ function handleInput(event) {
   renderScores();
 }
 
+function addStrategyToCurrentSituation(strategyNumber) {
+  const item = fixSituations[getActivityIndex("fix")];
+  state.fix[item.id] = state.fix[item.id] || { strategies: [] };
+  const current = new Set(state.fix[item.id].strategies || []);
+  current.add(Number(strategyNumber));
+  state.fix[item.id].strategies = Array.from(current).sort((a, b) => a - b);
+  saveState();
+  renderApp();
+}
+
+function removeStrategyFromCurrentSituation(strategyNumber) {
+  const item = fixSituations[getActivityIndex("fix")];
+  state.fix[item.id] = state.fix[item.id] || { strategies: [] };
+  state.fix[item.id].strategies = (state.fix[item.id].strategies || []).filter((number) => number !== Number(strategyNumber));
+  saveState();
+  renderApp();
+}
+
 function handleClick(event) {
   const nav = event.target.closest("[data-nav]");
   if (nav) setActive(nav.dataset.nav);
+
+  const stepButton = event.target.closest("[data-step]");
+  if (stepButton) {
+    setActivityIndex(activeActivity, getActivityIndex(activeActivity) + Number(stepButton.dataset.step));
+  }
+
+  const jumpButton = event.target.closest("[data-step-jump]");
+  if (jumpButton) {
+    setActivityIndex(activeActivity, Number(jumpButton.dataset.stepJump));
+  }
+
+  const referenceButton = event.target.closest("[data-reference-mode]");
+  if (referenceButton) {
+    state.referenceMode = referenceButton.dataset.referenceMode;
+    saveState();
+    renderApp();
+  }
+
+  const strategyTile = event.target.closest("[data-strategy]");
+  if (strategyTile) {
+    addStrategyToCurrentSituation(strategyTile.dataset.strategy);
+  }
+
+  const removeStrategy = event.target.closest("[data-remove-strategy]");
+  if (removeStrategy) {
+    removeStrategyFromCurrentSituation(removeStrategy.dataset.removeStrategy);
+  }
 
   const moveButton = event.target.closest("[data-rank-move]");
   if (moveButton) {
@@ -658,13 +764,41 @@ function handleClick(event) {
   }
 }
 
+function handleDragStart(event) {
+  const tile = event.target.closest("[data-strategy]");
+  if (!tile) return;
+  event.dataTransfer.setData("text/plain", tile.dataset.strategy);
+  event.dataTransfer.effectAllowed = "copy";
+}
+
+function handleDragOver(event) {
+  const zone = event.target.closest("[data-drop-situation]");
+  if (!zone) return;
+  event.preventDefault();
+  zone.classList.add("drag-over");
+}
+
+function handleDragLeave(event) {
+  const zone = event.target.closest("[data-drop-situation]");
+  if (zone) zone.classList.remove("drag-over");
+}
+
+function handleDrop(event) {
+  const zone = event.target.closest("[data-drop-situation]");
+  if (!zone) return;
+  event.preventDefault();
+  zone.classList.remove("drag-over");
+  const strategyNumber = event.dataTransfer.getData("text/plain");
+  if (strategyNumber) addStrategyToCurrentSituation(strategyNumber);
+}
+
 function buildReport() {
   const { scores, total } = getScores();
+  const name = studentFullName();
   const lines = [];
   lines.push("Family Functions & Healthy Families Results");
-  lines.push(`Student: ${state.student.name || "Not entered"}`);
+  lines.push(`Student: ${name || "Not entered"}`);
   lines.push(`Class period: ${state.student.period || "Not entered"}`);
-  lines.push(`Date: ${state.student.date || "Not entered"}`);
   lines.push(`Overall score: ${total.points}/${total.possible} (${total.percent}%)`);
   lines.push("");
   for (const activity of activities.filter((item) => item.id !== "reference")) {
@@ -708,12 +842,6 @@ function buildReport() {
     lines.push(prompt);
     lines.push(state.ranking.responses[index] || "[blank]");
   });
-  lines.push("");
-  lines.push("Real World");
-  realWorld.forEach((item, index) => {
-    lines.push(`${item.functionName}: ${state.world[index] || "[blank]"}`);
-  });
-  lines.push("");
   lines.push("Case Study");
   caseStudy.questions.forEach((question) => {
     lines.push(question.prompt);
@@ -723,7 +851,7 @@ function buildReport() {
 }
 
 function downloadReport(report) {
-  const safeName = (state.student.name || "student").trim().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "student";
+  const safeName = (studentFullName() || "student").trim().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "student";
   const filename = `family-functions-results-${safeName}.txt`;
   const blob = new Blob([report], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
@@ -739,11 +867,11 @@ function downloadReport(report) {
 
 function openGmail(report, filename) {
   const { total } = getScores();
-  const subject = `Family Functions Packet - ${state.student.name || "Student"} - ${total.percent}%`;
+  const name = studentFullName();
+  const subject = `Family Functions Packet - ${name || "Student"} - ${total.percent}%`;
   const summary = [
-    `Student: ${state.student.name || "Not entered"}`,
+    `Student: ${name || "Not entered"}`,
     `Class period: ${state.student.period || "Not entered"}`,
-    `Date: ${state.student.date || "Not entered"}`,
     `Overall score: ${total.points}/${total.possible} (${total.percent}%)`,
     "",
     `Results file generated: ${filename}`,
@@ -757,13 +885,14 @@ function openGmail(report, filename) {
 async function createGmailDraft(report, filename) {
   if (!APPS_SCRIPT_WEB_APP_URL) return false;
   const { total } = getScores();
+  const name = studentFullName();
   await fetch(APPS_SCRIPT_WEB_APP_URL, {
     method: "POST",
     mode: "no-cors",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({
       to: TEACHER_EMAIL,
-      subject: `Family Functions Packet - ${state.student.name || "Student"} - ${total.percent}%`,
+      subject: `Family Functions Packet - ${name || "Student"} - ${total.percent}%`,
       filename,
       report,
       summary: `Overall score: ${total.points}/${total.possible} (${total.percent}%)`,
@@ -795,6 +924,10 @@ function showToast(message) {
 document.addEventListener("input", handleInput);
 document.addEventListener("change", handleInput);
 document.addEventListener("click", handleClick);
+document.addEventListener("dragstart", handleDragStart);
+document.addEventListener("dragover", handleDragOver);
+document.addEventListener("dragleave", handleDragLeave);
+document.addEventListener("drop", handleDrop);
 document.getElementById("submitWork").addEventListener("click", submitWork);
 
 renderApp();

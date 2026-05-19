@@ -8,12 +8,8 @@
   </head>
   <body>
     <header class="app-header">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 72 72" role="img">
-          <circle cx="36" cy="36" r="31"></circle>
-          <path d="M19 38h34M23 27h26M27 49h18"></path>
-          <path d="M18 38c6-12 30-12 36 0M24 52c4-8 20-8 24 0M24 24c4-8 20-8 24 0"></path>
-        </svg>
+      <div class="brand-mark">
+        <img src="https://cmsv2-assets.apptegy.net/uploads/31303/file/5453843/c76a25f3-61e0-4b22-8560-f7f2c77127a3.png" alt="Greece Central Schools logo">
       </div>
       <div>
         <p class="eyebrow">Grade 6 Family and Childcare</p>
@@ -22,31 +18,42 @@
       <div class="score-pill" id="overallScore">0%</div>
     </header>
 
-    <section class="student-band" aria-label="Student information">
-      <label>
-        <span>Student name</span>
-        <input id="studentName" autocomplete="name" placeholder="First and last name">
-      </label>
-      <label>
-        <span>Class period</span>
-        <input id="classPeriod" placeholder="Period">
-      </label>
-      <label>
-        <span>Date</span>
-        <input id="workDate" type="date">
-      </label>
-      <button id="submitWork" class="primary-button">Prepare Gmail Results</button>
-    </section>
-
     <div class="layout">
-      <nav class="activity-nav" id="activityNav" aria-label="Activities"></nav>
+      <nav class="activity-nav" aria-label="Activities">
+        <div id="activityNav"></div>
+      </nav>
       <main id="activityRoot" class="activity-root" tabindex="-1"></main>
-      <aside class="summary-panel" aria-label="Progress summary">
+      <aside class="summary-panel" aria-label="Information hub">
         <h2>Score</h2>
         <div class="meter">
           <span id="meterFill"></span>
         </div>
         <dl id="scoreBreakdown"></dl>
+        <section class="identity-panel" aria-label="Student information">
+          <h2>Student</h2>
+          <label>
+            <span>First name</span>
+            <input id="firstName" autocomplete="given-name" placeholder="First name">
+          </label>
+          <label>
+            <span>Last name</span>
+            <input id="lastName" autocomplete="family-name" placeholder="Last name">
+          </label>
+          <label>
+            <span>Class period</span>
+            <select id="classPeriod">
+              <option value="">Choose period</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4/5">4/5</option>
+              <option value="6/7">6/7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+            </select>
+          </label>
+          <button id="submitWork" class="primary-button">Prepare Gmail Results</button>
+        </section>
       </aside>
     </div>
 
