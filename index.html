@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Family Functions Interactive Packet</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 72 72" role="img">
+          <circle cx="36" cy="36" r="31"></circle>
+          <path d="M19 38h34M23 27h26M27 49h18"></path>
+          <path d="M18 38c6-12 30-12 36 0M24 52c4-8 20-8 24 0M24 24c4-8 20-8 24 0"></path>
+        </svg>
+      </div>
+      <div>
+        <p class="eyebrow">Grade 6 Family and Childcare</p>
+        <h1>Family Functions & Healthy Families</h1>
+      </div>
+      <div class="score-pill" id="overallScore">0%</div>
+    </header>
+
+    <section class="student-band" aria-label="Student information">
+      <label>
+        <span>Student name</span>
+        <input id="studentName" autocomplete="name" placeholder="First and last name">
+      </label>
+      <label>
+        <span>Class period</span>
+        <input id="classPeriod" placeholder="Period">
+      </label>
+      <label>
+        <span>Date</span>
+        <input id="workDate" type="date">
+      </label>
+      <button id="submitWork" class="primary-button">Prepare Gmail Results</button>
+    </section>
+
+    <div class="layout">
+      <nav class="activity-nav" id="activityNav" aria-label="Activities"></nav>
+      <main id="activityRoot" class="activity-root" tabindex="-1"></main>
+      <aside class="summary-panel" aria-label="Progress summary">
+        <h2>Score</h2>
+        <div class="meter">
+          <span id="meterFill"></span>
+        </div>
+        <dl id="scoreBreakdown"></dl>
+      </aside>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
