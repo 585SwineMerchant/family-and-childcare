@@ -1,4 +1,13 @@
-const TEACHER_EMAIL = "kevin.mccann@greececsd.org";
+const TEACHERS = [
+  { id: "mccann",    name: "McCann",    email: "kevin.mccann@greececsd.org" },
+  { id: "epping",    name: "Epping",    email: "christine.epping-plaisted@greececsd.org" },
+  { id: "billitier", name: "Billitier", email: "hannah.billitier@greececsd.org" },
+  { id: "swanson",   name: "Swanson",   email: "janene.swanson@greececsd.org" },
+];
+
+function getTeacher() {
+  return TEACHERS.find((t) => t.id === state.student.teacher) || TEACHERS[0];
+}
 const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhFV6QJmNiH-ny6So0C-xv7_49akwmBYcI3OMVvqk81MqCAOX-72Hf3GD2KxqGp7Bmdg/exec";
 
 const FUNCTIONS = [
@@ -183,7 +192,7 @@ const activities = [
 ];
 
 const defaultState = {
-  student: { firstName: "", lastName: "", period: "" },
+  student: { firstName: "", lastName: "", period: "", teacher: "" },
   progress: {},
   referenceMode: "definition",
   sorting: {},
@@ -357,6 +366,7 @@ function renderStudentFields() {
   document.getElementById("firstName").value = state.student.firstName;
   document.getElementById("lastName").value = state.student.lastName;
   document.getElementById("classPeriod").value = state.student.period;
+  document.getElementById("teacherSelect").value = state.student.teacher;
 }
 
 function renderNav() {
@@ -692,6 +702,7 @@ function handleInput(event) {
   if (target.id === "firstName") state.student.firstName = target.value;
   if (target.id === "lastName") state.student.lastName = target.value;
   if (target.id === "classPeriod") state.student.period = target.value;
+  if (target.id === "teacherSelect") state.student.teacher = target.value;
 
   if (name.startsWith("sorting-")) state.sorting[name.split("-")[1]] = target.value;
 
@@ -862,6 +873,7 @@ function buildReport() {
   lines.push("============================================================");
   lines.push(`Student:      ${name || "Not entered"}`);
   lines.push(`Class period: ${state.student.period || "Not entered"}`);
+  lines.push(`Teacher:      ${getTeacher().name}`);
   lines.push(`Total score:  ${total.points} / 100 pts`);
   lines.push(`  Auto-graded:    ${autoTotal.points} / ${autoTotal.possible} pts`);
   lines.push(`  Short answers:  ${shortTotal.points} / ${shortTotal.possible} pts (provisional — see section below)`);
@@ -1015,17 +1027,19 @@ function downloadReport(report, filename) {
 function openGmail(report, filename, submittedAt) {
   const { total } = getScores();
   const name = studentFullName();
+  const teacher = getTeacher();
   const subject = `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`;
   const summary = [
     `Student: ${name || "Not entered"}`,
     `Class period: ${state.student.period || "Not entered"}`,
+    `Teacher: ${teacher.name}`,
     `Overall score: ${total.points}/${total.possible} (${total.percent}%)`,
     "",
     `Results file generated: ${filename}`,
     "",
     "The complete response report is included in the generated text file.",
   ].join("\n");
-  const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(TEACHER_EMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
+  const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(teacher.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
@@ -1033,12 +1047,13 @@ async function createGmailDraft(report, filename, submittedAt) {
   if (!APPS_SCRIPT_WEB_APP_URL) return false;
   const { total } = getScores();
   const name = studentFullName();
+  const teacher = getTeacher();
   const payload = {
-    to: TEACHER_EMAIL,
+    to: teacher.email,
     subject: `Family Functions Packet - ${name || "Student"} - ${total.percent}% - ${submittedAt}`,
     filename,
     report,
-    summary: `Student: ${name || "Not entered"}\nClass period: ${state.student.period || "Not entered"}\nOverall score: ${total.points}/${total.possible} (${total.percent}%)`,
+    summary: `Student: ${name || "Not entered"}\nClass period: ${state.student.period || "Not entered"}\nTeacher: ${teacher.name}\nOverall score: ${total.points}/${total.possible} (${total.percent}%)`,
   };
   postToAppsScript(payload);
   return true;
