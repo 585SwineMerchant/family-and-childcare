@@ -351,6 +351,56 @@ button:focus-visible {
   font-weight: 800;
 }
 
+.auto-tag {
+  background: #e4f5ec;
+  color: #1a6b40;
+}
+
+.review-tag {
+  background: #ede8fb;
+  color: #4a359a;
+}
+
+.review-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7860d7;
+  white-space: nowrap;
+}
+
+.review-star {
+  color: var(--violet);
+  font-size: 0.82rem;
+  margin-left: 2px;
+}
+
+.score-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 4px 0;
+}
+
+.score-summary-row dt {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.score-summary-row dd strong {
+  color: var(--blue-dark);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .scenario-text {
   margin: 0;
   font-size: 1.18rem;

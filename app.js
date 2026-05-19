@@ -261,13 +261,28 @@ function scoreObject(points, possible) {
   return { points, possible, percent: possible ? Math.round((points / possible) * 100) : 100 };
 }
 
+function splitScore(autoPoints, autoPossible, shortPoints, shortPossible) {
+  const points = autoPoints + shortPoints;
+  const possible = autoPossible + shortPossible;
+  return {
+    auto: { points: autoPoints, possible: autoPossible },
+    short: { points: shortPoints, possible: shortPossible },
+    points,
+    possible,
+    percent: possible ? Math.round((points / possible) * 100) : 100,
+  };
+}
+
 function getScores() {
   const scores = {};
   for (const activity of activities) scores[activity.id] = activity.score();
   const graded = activities.filter((activity) => activity.id !== "reference");
-  const points = graded.reduce((sum, activity) => sum + scores[activity.id].points, 0);
-  const possible = graded.reduce((sum, activity) => sum + scores[activity.id].possible, 0);
-  return { scores, total: scoreObject(points, possible) };
+  const autoPoints = graded.reduce((sum, a) => sum + scores[a.id].auto.points, 0);
+  const autoPossible = graded.reduce((sum, a) => sum + scores[a.id].auto.possible, 0);
+  const shortPoints = graded.reduce((sum, a) => sum + scores[a.id].short.points, 0);
+  const shortPossible = graded.reduce((sum, a) => sum + scores[a.id].short.possible, 0);
+  const total = scoreObject(autoPoints + shortPoints, autoPossible + shortPossible);
+  return { scores, total, autoTotal: { points: autoPoints, possible: autoPossible }, shortTotal: { points: shortPoints, possible: shortPossible } };
 }
 
 function getActivityTotal(id) {
@@ -349,7 +364,8 @@ function renderNav() {
   document.getElementById("activityNav").innerHTML = activities.map((activity, index) => {
     const current = activity.id === activeActivity ? ' aria-current="page"' : "";
     const score = scores[activity.id];
-    const scoreText = activity.id === "reference" ? "study" : `${score.points}/${score.possible}`;
+    const hasReview = activity.id !== "reference" && score.short.possible > 0;
+    const scoreText = activity.id === "reference" ? "study" : `${score.points}/${score.possible}${hasReview ? "★" : ""}`;
     return `
       <button class="nav-button" data-nav="${activity.id}"${current}>
         <span class="nav-index">${index + 1}</span>
@@ -360,15 +376,28 @@ function renderNav() {
 }
 
 function renderScores() {
-  const { scores, total } = getScores();
-  document.getElementById("overallScore").textContent = `${total.percent}%`;
+  const { scores, total, autoTotal, shortTotal } = getScores();
+  document.getElementById("overallScore").textContent = `${total.points}/100`;
   document.getElementById("meterFill").style.width = `${total.percent}%`;
-  document.getElementById("scoreBreakdown").innerHTML = activities
-    .filter((activity) => activity.id !== "reference")
-    .map((activity) => {
-      const score = scores[activity.id];
-      return `<div class="score-row"><dt>${activity.title}</dt><dd><strong>${score.points}</strong>/${score.possible}</dd></div>`;
-    }).join("");
+  document.getElementById("scoreBreakdown").innerHTML = `
+    <div class="score-row score-summary-row">
+      <dt>Auto-graded</dt>
+      <dd><strong>${autoTotal.points}</strong>/${autoTotal.possible}</dd>
+    </div>
+    <div class="score-row score-summary-row">
+      <dt>Short answers <span class="review-label">★ provisional</span></dt>
+      <dd><strong>${shortTotal.points}</strong>/${shortTotal.possible}</dd>
+    </div>
+    <div class="score-divider"></div>
+    ${activities
+      .filter((activity) => activity.id !== "reference")
+      .map((activity) => {
+        const score = scores[activity.id];
+        return `<div class="score-row">
+          <dt>${activity.title}</dt>
+          <dd><strong>${score.points}</strong>/${score.possible}${score.short.possible > 0 ? '<span class="review-star" title="Includes short answers pending teacher review">★</span>' : ""}</dd>
+        </div>`;
+      }).join("")}`;
 }
 
 function sectionIntro(title, text) {
@@ -419,7 +448,7 @@ function renderReference() {
 }
 
 function scoreReference() {
-  return scoreObject(0, 0);
+  return splitScore(0, 0, 0, 0);
 }
 
 function renderSorting() {
@@ -428,7 +457,7 @@ function renderSorting() {
     <article class="card focus-card">
       <div class="card-header">
         <h3>Scenario Card ${card.id}</h3>
-        <span class="tag">1 point</span>
+        <span class="tag auto-tag">1 pt auto</span>
       </div>
       <p class="scenario-text">${escapeHtml(card.text)}</p>
       ${functionSelect(`sorting-${card.id}`, state.sorting[card.id] || "")}
@@ -437,7 +466,7 @@ function renderSorting() {
 
 function scoreSorting() {
   const points = sortingCards.reduce((sum, card) => sum + (state.sorting[card.id] === card.primary ? 1 : 0), 0);
-  return scoreObject(points, sortingCards.length);
+  return splitScore(points, sortingCards.length, 0, 0);
 }
 
 function renderHealthy() {
@@ -447,7 +476,7 @@ function renderHealthy() {
     <article class="card focus-card">
       <div class="card-header">
         <h3>Scenario ${item.id}</h3>
-        <span class="tag">2 points</span>
+        <span class="tag auto-tag">1 auto</span><span class="tag review-tag">1 ★ review</span>
       </div>
       <p>${escapeHtml(item.text)}</p>
       <div class="choice-row" role="radiogroup" aria-label="Scenario ${item.id}">
@@ -465,13 +494,13 @@ function renderHealthy() {
 }
 
 function scoreHealthy() {
-  let points = 0;
+  let autoPoints = 0, shortPoints = 0;
   for (const item of healthyScenarios) {
     const entry = state.healthy[item.id] || {};
-    if (entry.label === item.answer) points += 1;
-    points += completionPoint(entry.reason, 7);
+    if (entry.label === item.answer) autoPoints += 1;
+    shortPoints += completionPoint(entry.reason, 7);
   }
-  return scoreObject(points, healthyScenarios.length * 2);
+  return splitScore(autoPoints, healthyScenarios.length, shortPoints, healthyScenarios.length);
 }
 
 function renderMissing() {
@@ -481,7 +510,7 @@ function renderMissing() {
     <article class="card focus-card">
       <div class="card-header">
         <h3>Card ${card.id}: ${escapeHtml(card.family)}</h3>
-        <span class="tag">3 points</span>
+        <span class="tag auto-tag">1 auto</span><span class="tag review-tag">2 ★ review</span>
       </div>
       <p>${escapeHtml(card.text)}</p>
       ${functionSelect(`missing-function-${card.id}`, entry.functionName || "", "Which function is not being met?")}
@@ -499,14 +528,13 @@ function renderMissing() {
 }
 
 function scoreMissing() {
-  let points = 0;
+  let autoPoints = 0, shortPoints = 0;
   for (const card of missingCards) {
     const entry = state.missing[card.id] || {};
-    if (entry.functionName === card.answer) points += 1;
-    points += completionPoint(entry.effect, 8);
-    points += completionPoint(entry.affected, 8);
+    if (entry.functionName === card.answer) autoPoints += 1;
+    shortPoints += completionPoint(entry.effect, 8) + completionPoint(entry.affected, 8);
   }
-  return scoreObject(points, missingCards.length * 3);
+  return splitScore(autoPoints, missingCards.length, shortPoints, missingCards.length * 2);
 }
 
 function renderFixIt() {
@@ -524,7 +552,7 @@ function renderFixIt() {
     <article class="card focus-card">
       <div class="card-header">
         <h3>Situation ${item.id}</h3>
-        <span class="tag">2 points</span>
+        <span class="tag auto-tag">1 auto</span><span class="tag review-tag">1 ★ review</span>
       </div>
       <p>${escapeHtml(item.text)}</p>
       <div class="drop-zone" data-drop-situation="${item.id}">
@@ -553,13 +581,13 @@ function renderFixIt() {
 }
 
 function scoreFixIt() {
-  let points = 0;
+  let autoPoints = 0, shortPoints = 0;
   for (const item of fixSituations) {
     const entry = state.fix[item.id] || { strategies: [] };
-    if ((entry.strategies || []).some((choice) => item.primary.includes(Number(choice)))) points += 1;
-    points += completionPoint(entry.reason, 7);
+    if ((entry.strategies || []).some((choice) => item.primary.includes(Number(choice)))) autoPoints += 1;
+    shortPoints += completionPoint(entry.reason, 7);
   }
-  return scoreObject(points, fixSituations.length * 2);
+  return splitScore(autoPoints, fixSituations.length, shortPoints, fixSituations.length);
 }
 
 function renderConsequences() {
@@ -569,7 +597,7 @@ function renderConsequences() {
     <article class="card focus-card">
       <div class="card-header">
         <h3>Consequence ${index + 1}</h3>
-        <span class="tag">1 point</span>
+        <span class="tag auto-tag">1 pt auto</span>
       </div>
       <p>${escapeHtml(item.text)}</p>
       ${functionSelect(`consequence-${index}`, state.consequence[index] || "")}
@@ -578,15 +606,18 @@ function renderConsequences() {
 
 function scoreConsequences() {
   const points = consequences.reduce((sum, item, index) => sum + (state.consequence[index] === item.functionName ? 1 : 0), 0);
-  return scoreObject(points, consequences.length);
+  return splitScore(points, consequences.length, 0, 0);
 }
 
 function renderRanking() {
   return `
     ${sectionIntro("Importance Ranking", "Rank the six functions from most important to least important and defend your choices.")}
     <section class="card focus-card">
-      <h3>Ranked Functions</h3>
-      <p class="muted">Move the functions into your own order from most important to least important.</p>
+      <div class="card-header">
+        <h3>Ranked Functions</h3>
+        <span class="tag auto-tag">3 auto</span>
+      </div>
+      <p class="muted">Move the functions into your own order from most important to least important. (3 pts for changing from the default order)</p>
       <div class="rank-list">
         ${state.ranking.order.map((name, rankIndex) => `
           <div class="rank-item">
@@ -600,16 +631,20 @@ function renderRanking() {
     <section class="grid-list ranking-responses">
       ${rankingPrompts.map((prompt, index) => `
         <label class="card">
-          <span>${escapeHtml(prompt)}</span>
+          <div class="card-header">
+            <span>${escapeHtml(prompt)}</span>
+            <span class="tag review-tag">1 ★ review</span>
+          </div>
           <textarea name="ranking-response-${index}">${escapeHtml(state.ranking.responses[index] || "")}</textarea>
         </label>`).join("")}
     </section>`;
 }
 
 function scoreRanking() {
-  const completeOrder = new Set(state.ranking.order).size === FUNCTIONS.length ? 6 : 0;
-  const written = rankingPrompts.reduce((sum, _, index) => sum + completionPoint(state.ranking.responses[index], 8), 0);
-  return scoreObject(completeOrder + written, 6 + rankingPrompts.length);
+  const isEngaged = state.ranking.order.some((name, i) => name !== FUNCTIONS[i]);
+  const autoPoints = isEngaged ? 3 : 0;
+  const shortPoints = rankingPrompts.reduce((sum, _, i) => sum + completionPoint(state.ranking.responses[i], 8), 0);
+  return splitScore(autoPoints, 3, shortPoints, rankingPrompts.length);
 }
 
 function renderCaseStudy() {
@@ -629,20 +664,25 @@ function renderCaseStudy() {
         </div>
       </div>
     </section>
-    <label class="card focus-card">
-      <span>${escapeHtml(question.prompt)}</span>
-      <textarea name="case-response-${question.id}">${escapeHtml(state.caseStudy[question.id] || "")}</textarea>
-    </label>`);
+    <div class="card focus-card">
+      <div class="card-header">
+        <span>${escapeHtml(question.prompt)}</span>
+        <span class="tag review-tag">2 ★ review</span>
+      </div>
+      <label>
+        <span class="sr-only">Your response</span>
+        <textarea name="case-response-${question.id}">${escapeHtml(state.caseStudy[question.id] || "")}</textarea>
+      </label>
+    </div>`);
 }
 
 function scoreCaseStudy() {
-  let points = 0;
+  let shortPoints = 0;
   for (const question of caseStudy.questions) {
     const value = state.caseStudy[question.id] || "";
-    points += completionPoint(value, 12);
-    points += keywordPoint(value, question.keywords);
+    shortPoints += completionPoint(value, 12) + keywordPoint(value, question.keywords);
   }
-  return scoreObject(points, caseStudy.questions.length * 2);
+  return splitScore(0, 0, shortPoints, caseStudy.questions.length * 2);
 }
 
 function handleInput(event) {
@@ -813,60 +853,128 @@ function handleDrop(event) {
 }
 
 function buildReport() {
-  const { scores, total } = getScores();
+  const { scores, total, autoTotal, shortTotal } = getScores();
   const name = studentFullName();
   const lines = [];
-  lines.push("Family Functions & Healthy Families Results");
-  lines.push(`Student: ${name || "Not entered"}`);
+
+  lines.push("============================================================");
+  lines.push("FAMILY FUNCTIONS & HEALTHY FAMILIES — RESULTS REPORT");
+  lines.push("============================================================");
+  lines.push(`Student:      ${name || "Not entered"}`);
   lines.push(`Class period: ${state.student.period || "Not entered"}`);
-  lines.push(`Overall score: ${total.points}/${total.possible} (${total.percent}%)`);
+  lines.push(`Total score:  ${total.points} / 100 pts`);
+  lines.push(`  Auto-graded:    ${autoTotal.points} / ${autoTotal.possible} pts`);
+  lines.push(`  Short answers:  ${shortTotal.points} / ${shortTotal.possible} pts (provisional — see section below)`);
   lines.push("");
-  for (const activity of activities.filter((item) => item.id !== "reference")) {
-    const score = scores[activity.id];
-    lines.push(`${activity.title}: ${score.points}/${score.possible} (${score.percent}%)`);
+
+  lines.push("------------------------------------------------------------");
+  lines.push("AUTO-GRADED RESULTS");
+  lines.push("------------------------------------------------------------");
+
+  const sortScore = scores.sorting;
+  lines.push(`Function Sorting: ${sortScore.auto.points} / ${sortScore.auto.possible} pts`);
+  for (const card of sortingCards) {
+    const answer = state.sorting[card.id] || "[blank]";
+    const correct = answer === card.primary;
+    lines.push(`  ${card.id}. Student: ${answer} | Correct: ${card.primary} ${correct ? "✓" : "✗"}`);
   }
   lines.push("");
-  lines.push("Student Responses");
-  lines.push("");
-  lines.push("Function Sorting");
-  for (const card of sortingCards) lines.push(`${card.id}. ${state.sorting[card.id] || "[blank]"} | Correct: ${card.primary} | ${card.text}`);
-  lines.push("");
-  lines.push("Healthy or Unhealthy");
+
+  const healthyScore = scores.healthy;
+  lines.push(`Healthy or Unhealthy (labels): ${healthyScore.auto.points} / ${healthyScore.auto.possible} pts`);
   for (const item of healthyScenarios) {
     const entry = state.healthy[item.id] || {};
-    lines.push(`${item.id}. ${entry.label || "[blank]"} | Correct: ${item.answer}`);
-    lines.push(`Why: ${entry.reason || "[blank]"}`);
+    const correct = entry.label === item.answer;
+    lines.push(`  ${item.id}. Student: ${entry.label || "[blank]"} | Correct: ${item.answer} ${correct ? "✓" : "✗"}`);
   }
   lines.push("");
-  lines.push("What's Missing");
+
+  const missingScore = scores.missing;
+  lines.push(`What's Missing (function ID): ${missingScore.auto.points} / ${missingScore.auto.possible} pts`);
   for (const card of missingCards) {
     const entry = state.missing[card.id] || {};
-    lines.push(`${card.id}. ${card.family} | Function: ${entry.functionName || "[blank]"} | Correct: ${card.answer}`);
-    lines.push(`Effect: ${entry.effect || "[blank]"}`);
-    lines.push(`Most affected: ${entry.affected || "[blank]"}`);
+    const correct = entry.functionName === card.answer;
+    lines.push(`  ${card.id}. ${card.family} | Student: ${entry.functionName || "[blank]"} | Correct: ${card.answer} ${correct ? "✓" : "✗"}`);
   }
   lines.push("");
-  lines.push("Fix It");
+
+  const fixScore = scores.fix;
+  lines.push(`Fix It (strategy selection): ${fixScore.auto.points} / ${fixScore.auto.possible} pts`);
   for (const item of fixSituations) {
     const entry = state.fix[item.id] || {};
-    lines.push(`${item.id}. Selected: ${(entry.strategies || []).join(", ") || "[blank]"} | Primary: ${item.primary.join(", ")} | Supporting: ${item.supporting.join(", ")}`);
-    lines.push(`Why: ${entry.reason || "[blank]"}`);
+    const selected = (entry.strategies || []).join(", ") || "[blank]";
+    const correct = (entry.strategies || []).some((c) => item.primary.includes(Number(c)));
+    lines.push(`  ${item.id}. Selected: ${selected} | Primary: ${item.primary.join(", ")} ${correct ? "✓" : "✗"}`);
   }
   lines.push("");
-  lines.push("Consequences");
-  consequences.forEach((item, index) => lines.push(`${index + 1}. ${state.consequence[index] || "[blank]"} | Correct: ${item.functionName}`));
+
+  const conScore = scores.consequence;
+  lines.push(`Consequences: ${conScore.auto.points} / ${conScore.auto.possible} pts`);
+  consequences.forEach((item, index) => {
+    const answer = state.consequence[index] || "[blank]";
+    const correct = answer === item.functionName;
+    lines.push(`  ${index + 1}. Student: ${answer} | Correct: ${item.functionName} ${correct ? "✓" : "✗"}`);
+  });
   lines.push("");
-  lines.push("Ranking");
-  state.ranking.order.forEach((name, index) => lines.push(`${index + 1}. ${name}`));
+
+  const rankScore = scores.ranking;
+  const isEngaged = state.ranking.order.some((n, i) => n !== FUNCTIONS[i]);
+  lines.push(`Ranking (re-ordered from default): ${rankScore.auto.points} / ${rankScore.auto.possible} pts — ${isEngaged ? "Yes ✓" : "No ✗"}`);
+  lines.push("  Order: " + state.ranking.order.map((n, i) => `${i + 1}. ${n}`).join(" | "));
+  lines.push("");
+
+  lines.push("------------------------------------------------------------");
+  lines.push(`SHORT ANSWER RESPONSES — TEACHER REVIEW (${shortTotal.possible} pts total)`);
+  lines.push("Provisional word-count score shown. Assign final points as needed.");
+  lines.push("------------------------------------------------------------");
+
+  lines.push("");
+  lines.push(`Healthy or Unhealthy — Written Reasons (${healthyScore.short.possible} pts, 1 pt each)`);
+  for (const item of healthyScenarios) {
+    const entry = state.healthy[item.id] || {};
+    const wc = wordCount(entry.reason);
+    lines.push(`  ${item.id}. [${wc} words] ${entry.reason || "[blank]"}`);
+    lines.push(`     Scenario: ${item.text}`);
+  }
+  lines.push("");
+
+  lines.push(`What's Missing — Written Responses (${missingScore.short.possible} pts, 1 pt each)`);
+  for (const card of missingCards) {
+    const entry = state.missing[card.id] || {};
+    lines.push(`  ${card.id}. ${card.family}`);
+    lines.push(`     Effect [${wordCount(entry.effect)} words]: ${entry.effect || "[blank]"}`);
+    lines.push(`     Most affected [${wordCount(entry.affected)} words]: ${entry.affected || "[blank]"}`);
+  }
+  lines.push("");
+
+  lines.push(`Fix It — Written Reasons (${fixScore.short.possible} pts, 1 pt each)`);
+  for (const item of fixSituations) {
+    const entry = state.fix[item.id] || {};
+    const wc = wordCount(entry.reason);
+    lines.push(`  ${item.id}. [${wc} words] ${entry.reason || "[blank]"}`);
+    lines.push(`     Situation: ${item.text}`);
+  }
+  lines.push("");
+
+  lines.push(`Ranking Written Responses (${rankScore.short.possible} pts, 1 pt each)`);
   rankingPrompts.forEach((prompt, index) => {
-    lines.push(prompt);
-    lines.push(state.ranking.responses[index] || "[blank]");
+    const wc = wordCount(state.ranking.responses[index]);
+    lines.push(`  Q${index + 1} [${wc} words]: ${state.ranking.responses[index] || "[blank]"}`);
+    lines.push(`     Prompt: ${prompt}`);
   });
-  lines.push("Case Study");
+  lines.push("");
+
+  const caseScore = scores.case;
+  lines.push(`Case Study — The Brennan Family (${caseScore.short.possible} pts, 2 pts each)`);
   caseStudy.questions.forEach((question) => {
-    lines.push(question.prompt);
-    lines.push(state.caseStudy[question.id] || "[blank]");
+    const value = state.caseStudy[question.id] || "";
+    const wc = wordCount(value);
+    lines.push(`  Q${question.id} [${wc} words]: ${value || "[blank]"}`);
+    lines.push(`     Prompt: ${question.prompt}`);
   });
+  lines.push("");
+  lines.push("============================================================");
+
   return lines.join("\n");
 }
 
